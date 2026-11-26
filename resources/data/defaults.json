@@ -1,0 +1,41 @@
+{
+  "presets": [
+    { "en": "Men's watch", "ja": "腕時計 メンズ" },
+    { "en": "Cassette Walkman", "ja": "カセットウォークマン" },
+    { "en": "CD Walkman", "ja": "CDウォークマン" },
+    { "en": "Nintendo DSi", "ja": "ニンテンドーDSi" },
+    { "en": "New 3DS LL", "ja": "New3DS LL" },
+    { "en": "Game Boy Advance SP", "ja": "ゲームボーイアドバンスSP" },
+    { "en": "Bait / conventional reel", "ja": "両軸リール" },
+    { "en": "Fishing rod lot", "ja": "竿 まとめ" },
+    { "en": "Compact digital camera", "ja": "コンデジ" }
+  ],
+  "conditions": [
+    { "en": "Any condition", "ja": "" },
+    { "en": "Used / second-hand", "ja": "中古" },
+    { "en": "Running, for watches", "ja": "稼働品" },
+    { "en": "Working", "ja": "動作品" },
+    { "en": "Tested and working", "ja": "動作確認済み" },
+    { "en": "Powers on only", "ja": "通電確認済み" },
+    { "en": "Untested", "ja": "動作未確認" },
+    { "en": "Junk / for repair", "ja": "ジャンク" },
+    { "en": "Sold as-is", "ja": "現状品" },
+    { "en": "Excellent condition", "ja": "美品" }
+  ],
+  "formats": [
+    { "en": "Any format", "ja": "" },
+    { "en": "¥1-start auction", "ja": "1円" },
+    { "en": "Bulk sale", "ja": "まとめ売り" },
+    { "en": "Large quantity", "ja": "大量" },
+    { "en": "Set / bundle", "ja": "セット" }
+  ],
+  "filters": [
+    { "en": "None", "ja": "" },
+    { "en": "Unit only", "ja": "本体のみ" },
+    { "en": "With box", "ja": "箱付き" },
+    { "en": "With accessories", "ja": "付属品付き" },
+    { "en": "Factory reset", "ja": "初期化済み" },
+    { "en": "Showa retro", "ja": "昭和レトロ" },
+    { "en": "For parts", "ja": "部品取り" }
+  ]
+}

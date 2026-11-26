@@ -1,0 +1,115 @@
+name: Test and release
+
+# Every push to main runs the tests.
+# If the version in package.json has no git tag yet, it also builds the
+# Windows app, publishes a GitHub Release, and updates the self-update feed
+# on GitHub Pages. Bump the version to ship; push without bumping to just test.
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  pages: write
+  id-token: write
+
+concurrency:
+  group: release-${{ github.ref }}
+  cancel-in-progress: false
+
+env:
+  NEUTRALINO_VERSION: "6.10.0"
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    outputs:
+      version: ${{ steps.ver.outputs.version }}
+      release: ${{ steps.ver.outputs.release }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - run: npm test
+      - id: ver
+        name: Should this push ship a release?
+        run: |
+          VERSION=$(node -p "require('./package.json').version")
+          echo "version=$VERSION" >> "$GITHUB_OUTPUT"
+          if [ "${{ github.event_name }}" != "pull_request" ] && [ "${{ github.ref }}" = "refs/heads/main" ] && ! git rev-parse -q --verify "refs/tags/v$VERSION" >/dev/null; then
+            echo "release=true" >> "$GITHUB_OUTPUT"
+            echo "Version $VERSION is new: releasing."
+          else
+            echo "release=false" >> "$GITHUB_OUTPUT"
+            echo "Version $VERSION already released (or not on main): tests only."
+          fi
+
+  release:
+    needs: test
+    if: needs.test.outputs.release == 'true'
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.pages.outputs.page_url }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+
+      - name: Check the DeepL key works
+        env:
+          DEEPL_API_KEY: ${{ secrets.DEEPL_API_KEY }}
+        run: |
+          if [ -z "$DEEPL_API_KEY" ]; then echo "::error::Add the DEEPL_API_KEY repository secret first."; exit 1; fi
+          case "$DEEPL_API_KEY" in *:fx) HOST=api-free.deepl.com ;; *) HOST=api.deepl.com ;; esac
+          CODE=$(curl -s -o usage.json -w "%{http_code}" -H "Authorization: DeepL-Auth-Key $DEEPL_API_KEY" "https://$HOST/v2/usage")
+          if [ "$CODE" != "200" ]; then echo "::error::DeepL rejected the key (HTTP $CODE)."; exit 1; fi
+          echo "DeepL usage: $(cat usage.json)"; rm usage.json
+          RESULT=$(curl -s -X POST "https://$HOST/v2/translate" -H "Authorization: DeepL-Auth-Key $DEEPL_API_KEY" -H "Content-Type: application/json" -d '{"text":["cassette player"],"target_lang":"JA"}')
+          echo "Sample translation: $RESULT"
+
+      - name: Download Neutralino binaries
+        run: |
+          mkdir -p bin
+          curl -sSL -o nl.zip "https://github.com/neutralinojs/neutralinojs/releases/download/v${NEUTRALINO_VERSION}/neutralinojs-v${NEUTRALINO_VERSION}.zip"
+          unzip -o -q nl.zip -d bin && rm nl.zip
+
+      - name: Set version, key and update address
+        env:
+          DEEPL_API_KEY: ${{ secrets.DEEPL_API_KEY }}
+          APP_VERSION: ${{ needs.test.outputs.version }}
+        run: |
+          OWNER=$(echo "${{ github.repository_owner }}" | tr '[:upper:]' '[:lower:]')
+          REPO="${{ github.event.repository.name }}"
+          echo "PAGES_BASE=https://$OWNER.github.io/$REPO" >> "$GITHUB_ENV"
+          UPDATE_URL="https://$OWNER.github.io/$REPO/update.json" node scripts/prepare-build.mjs
+
+      - run: npx neu build --release
+      - run: node scripts/package.mjs
+
+      - name: Publish GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: v${{ needs.test.outputs.version }}
+          name: Buyee Search Builder ${{ needs.test.outputs.version }}
+          target_commitish: ${{ github.sha }}
+          generate_release_notes: true
+          files: release/BuyeeSearch-win-x64.zip
+
+      - uses: actions/configure-pages@v5
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: site
+      - id: pages
+        uses: actions/deploy-pages@v4

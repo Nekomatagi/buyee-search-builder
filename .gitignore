@@ -1,0 +1,9 @@
+node_modules/
+bin/
+dist/
+release/
+site/
+.storage/
+.tmp/
+*.log
+neutralinojs.log

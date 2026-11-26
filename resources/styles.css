@@ -1,0 +1,60 @@
+:root {
+  color-scheme: light dark;
+  --bg: light-dark(#f3f3f3, #0b0b0b);
+  --card: light-dark(#ffffff, #141414);
+  --ink: light-dark(#111, #f2f2f2);
+  --mute: light-dark(#666, #a3a3a3);
+  --line: light-dark(#d9d9d9, #2e2e2e);
+  --sel: light-dark(#e6e6e6, #2c2c2c);
+  --ok: light-dark(#137a3d, #4ade80);
+  --warn: light-dark(#a1460b, #fbbf24);
+}
+* { box-sizing: border-box; min-width: 0; }
+body { margin: 0; background: var(--card); color: var(--ink);
+  font: 15px/1.5 "Yu Gothic UI", "Meiryo UI", "Segoe UI", system-ui, sans-serif; }
+.wrap { max-width: 640px; margin: 0 auto; padding: 20px 20px 28px; }
+.kick { font-size: 12px; color: var(--mute); margin: 0 0 2px; }
+h1 { font-size: 24px; line-height: 1.15; margin: 0 0 6px; }
+h2 { font-size: 15px; margin: 18px 0 8px; }
+section + section { border-top: 1px solid var(--line); margin-top: 18px; }
+.lbl { font-size: 12px; color: var(--mute); display: block; margin: 0 0 4px; }
+input, select { width: 100%; font: inherit; font-size: 15px; color: var(--ink); background: var(--card);
+  border: 1px solid var(--line); border-radius: 10px; padding: 9px 12px; min-height: 42px; }
+input:focus, select:focus, button:focus-visible { outline: 2px solid var(--ok); outline-offset: 1px; }
+.ja-box { margin-top: 10px; }
+.ja-head { display: flex; justify-content: space-between; align-items: baseline; gap: 8px; margin-top: 8px; }
+#ja, #fJa { font-size: 17px; font-weight: 600; }
+.romaji { margin: 4px 2px 0; font-size: 13px; color: var(--mute); font-style: italic; min-height: 1.5em; overflow-wrap: anywhere; }
+.src { font-size: 11px; color: var(--mute); }
+.src.err { color: var(--warn); }
+.row-head { display: flex; justify-content: space-between; align-items: center; margin: 14px 0 6px; }
+.row-head .lbl { margin: 0; }
+.presets { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 6px; }
+.chip { position: relative; font: inherit; font-size: 13px; color: var(--ink); background: transparent;
+  border: 1px solid var(--line); border-radius: 999px; padding: 5px 28px 5px 10px; min-height: 34px; cursor: pointer;
+  text-align: center; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; padding-right: 10px; }
+.chip.on { background: var(--sel); }
+.editing .chip { padding-right: 28px; }
+.chip .x { display: none; position: absolute; right: 8px; top: 50%; transform: translateY(-50%); color: var(--warn); font-weight: 700; }
+.editing .chip .x { display: inline; }
+button { font: inherit; cursor: pointer; }
+.link { background: none; border: 0; color: var(--ink); text-decoration: underline; font-size: 13px; padding: 4px 6px; min-height: 32px; }
+.add-filter { margin-top: 6px; padding-left: 0; }
+.panel { border: 1px dashed var(--line); border-radius: 12px; padding: 12px; margin-top: 6px; }
+.panel-btns { display: flex; gap: 8px; align-items: center; margin-top: 8px; }
+.pri { background: var(--ink); color: var(--card); border: 0; border-radius: 999px; font-weight: 700; min-height: 42px; padding: 0 18px; }
+.pri:disabled { opacity: .4; cursor: default; }
+.out { padding-top: 14px; }
+.out-head { display: flex; justify-content: space-between; align-items: center; }
+.tag { font-size: 11px; color: var(--ok); border: 1px solid color-mix(in srgb, var(--ok) 40%, transparent); border-radius: 6px; padding: 1px 7px; }
+.q { font-size: 24px; font-weight: 700; margin: 10px 0 0; overflow-wrap: anywhere; min-height: 1.4em; }
+.q-romaji { margin-bottom: 12px; }
+.btns { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 8px; }
+#open { background: transparent; color: var(--ink); border: 1px solid var(--line); border-radius: 999px; padding: 0 16px; min-height: 42px; }
+.foot { display: flex; justify-content: space-between; align-items: center; margin-top: 6px; }
+.hint { font-size: 12px; color: var(--mute); margin: 0; }
+.ver { font-size: 11px; color: var(--mute); text-align: center; margin: 18px 0 0; }
+.update { display: flex; justify-content: center; gap: 12px; align-items: center; padding: 8px; background: var(--ok); color: #fff; font-size: 13px; }
+.update[hidden] { display: none; }
+.update button { background: #fff; color: #111; border: 0; border-radius: 999px; padding: 4px 12px; font-weight: 700; }
+@media (max-width: 420px) { .presets { grid-template-columns: minmax(0, 1fr); } .btns { grid-template-columns: minmax(0, 1fr); } }

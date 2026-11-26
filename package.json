@@ -1,0 +1,20 @@
+{
+  "name": "buyee-search-builder",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Small Windows app that builds Japanese search queries for Buyee, with DeepL translation and offline romaji.",
+  "type": "module",
+  "scripts": {
+    "test": "node --test test/*.test.mjs",
+    "dev": "cd resources && python3 -m http.server 8765",
+    "build": "node scripts/prepare-build.mjs && neu build --release && node scripts/package.mjs"
+  },
+  "devDependencies": {
+    "@neutralinojs/neu": "11.8.0"
+  },
+  "dependencies": {
+    "@neutralinojs/lib": "6.10.0",
+    "kuroshiro": "1.2.1",
+    "kuroshiro-analyzer-kuromoji": "1.1.0"
+  }
+}
