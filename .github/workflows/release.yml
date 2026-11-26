@@ -71,6 +71,10 @@ jobs:
     needs: [test, translation]
     if: needs.test.outputs.release == 'true'
     runs-on: ubuntu-latest
+    # Two releases merged close together must not deploy Pages at the same time.
+    concurrency:
+      group: release-pages
+      cancel-in-progress: false
     environment:
       name: github-pages
       url: ${{ steps.pages.outputs.page_url }}
@@ -120,7 +124,9 @@ jobs:
           name: Buyee Search Builder ${{ needs.test.outputs.version }}
           target_commitish: ${{ github.sha }}
           generate_release_notes: true
-          files: release/BuyeeSearch-win-x64.zip
+          files: |
+            release/BuyeeSearch-win-x64.zip
+            release/resources.neu
 
       - uses: actions/configure-pages@v5
       - uses: actions/upload-pages-artifact@v3

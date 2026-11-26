@@ -98,12 +98,18 @@ Neutralino storage, kept in `.storage/` next to the exe (portable).
 
 ## Updates
 
-1. On start, the app fetches `NL_UPDATE_URL` (`https://<owner>.github.io/<repo>/update.json`).
-2. It checks again every 30 minutes, and when the globe is clicked.
-3. If `update.json` has a newer `version`, the globe turns into an up-arrow.
-4. Clicking the arrow asks for confirmation, saves the current search, downloads `resources.neu` from the same site, replaces the local one, and restarts.
+The app asks two places at once and takes the newest version, so one failing never strands it:
 
-Only `resources.neu` is updated. The exe itself changes only when the Neutralino version changes, which needs a fresh download from Releases. GitHub Pages is used because Neutralino's updater runs `fetch` inside the page, which needs CORS headers; GitHub Pages provides them, and release-asset downloads don't.
+| Source | Address | Install |
+|---|---|---|
+| GitHub Pages | `NL_UPDATE_URL` (`https://<owner>.github.io/<repo>/update.json`) | Neutralino's updater writes `resources.neu` |
+| Latest GitHub Release | `NL_RELEASES_URL` (`api.github.com/repos/<repo>/releases/latest`) | `curl.exe` downloads the release's `resources.neu` to `resources.neu.download`, then it's moved over the old file |
+
+1. It checks on start, every 30 minutes, and when the globe is clicked.
+2. When a newer version is found, it asks right away (once per version per run); after **Later**, the globe stays a green up-arrow.
+3. **Restart and update** saves the current search, installs, and restarts.
+
+Only `resources.neu` is updated. The exe itself changes only when the Neutralino version changes, which needs a fresh download from Releases. The Pages route exists because Neutralino's updater runs `fetch` inside the page, which needs CORS; the release route avoids that by downloading with `curl.exe`. The API answer itself does allow CORS. Releases before 0.4.4 have no `resources.neu` attached, so they're ignored by the second route.
 
 ## Start with Windows
 
@@ -120,6 +126,7 @@ Set by `scripts/prepare-build.mjs` in CI and exposed to the page as `NL_*` globa
 | `NL_APPVERSION` | `package.json` version |
 | `NL_DEEPL_KEY` | `DEEPL_API_KEY` repository secret |
 | `NL_UPDATE_URL` | GitHub Pages address of this repository |
+| `NL_RELEASES_URL` | GitHub API address of this repository's latest release |
 
 ## Security
 

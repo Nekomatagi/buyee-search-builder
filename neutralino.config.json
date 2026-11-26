@@ -30,7 +30,8 @@
   ],
   "globalVariables": {
     "DEEPL_KEY": "",
-    "UPDATE_URL": ""
+    "UPDATE_URL": "",
+    "RELEASES_URL": ""
   },
   "modes": {
     "window": {

@@ -223,3 +223,28 @@ test("DeepL instructions stay within DeepL's limits", () => {
   assert.ok(c.DEEPL_INSTRUCTIONS.length <= c.MAX_INSTRUCTIONS);
   for (const i of c.DEEPL_INSTRUCTIONS) assert.ok(i.length <= c.MAX_INSTRUCTION_LENGTH, i);
 });
+
+test("releaseUpdate reads GitHub's latest release", () => {
+  const rel = { tag_name: "v0.4.4", draft: false, prerelease: false, assets: [
+    { name: "BuyeeSearch-win-x64.zip", browser_download_url: "https://x/zip" },
+    { name: "resources.neu", browser_download_url: "https://x/resources.neu" }
+  ] };
+  assert.deepEqual(c.releaseUpdate(rel), { version: "0.4.4", resourcesURL: "https://x/resources.neu", source: "release" });
+  assert.equal(c.releaseUpdate({ ...rel, assets: rel.assets.slice(0, 1) }), null); // older releases had no resources.neu
+  assert.equal(c.releaseUpdate({ ...rel, draft: true }), null);
+  assert.equal(c.releaseUpdate(null), null);
+});
+
+test("pickUpdate takes the newest source that is newer than the app", () => {
+  const pages = { version: "0.4.2", source: "pages" }, rel = { version: "0.4.4", source: "release" };
+  assert.equal(c.pickUpdate("0.4.2", [pages, rel]), rel);       // Pages stuck behind: release wins
+  assert.equal(c.pickUpdate("0.4.4", [pages, rel]), null);      // up to date
+  assert.equal(c.pickUpdate("0.4.1", [pages, null]), pages);    // one source offline
+  assert.equal(c.pickUpdate("0.4.3", [{ ...rel }, { version: "0.4.4", source: "pages" }]).source, "release"); // tie: first wins
+});
+
+test("resourceSwapCommands downloads first, then swaps", () => {
+  const [dl, mv] = c.resourceSwapCommands({ url: "https://x/resources.neu", appDir: "C:/Apps/Buyee/" });
+  assert.equal(dl, 'curl.exe -sSL --fail --max-time 180 -o "C:\\Apps\\Buyee\\resources.neu.download" "https://x/resources.neu"');
+  assert.equal(mv, 'cmd /c move /Y "C:\\Apps\\Buyee\\resources.neu.download" "C:\\Apps\\Buyee\\resources.neu"');
+});

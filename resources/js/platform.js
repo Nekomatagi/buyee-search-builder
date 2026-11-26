@@ -4,6 +4,7 @@
 
 import {
   curlCommand, deeplBody, deeplBackBody, parseCurlOutput, cleanTranslation, searchClean, isNewer,
+  releaseUpdate, pickUpdate, resourceSwapCommands,
   exePathFrom, regAddCommand, regDeleteCommand, regQueryCommand, parseRegQuery
 } from "./core.js";
 
@@ -118,18 +119,33 @@ export function openUrl(url) {
 }
 
 // ---- self-update from GitHub Releases
+// Asks both update sources at once and returns the newest version found:
+// { version, source: "pages" | "release", resourcesURL } or null.
 export async function checkForUpdate() {
-  const url = globalVar("UPDATE_URL");
-  if (!isDesktop || !url) return null;
-  try {
-    const manifest = await Neutralino.updater.checkForUpdates(url);
-    return manifest && isNewer(manifest.version, appVersion()) ? manifest : null;
-  } catch {
-    return null;
-  }
+  if (!isDesktop) return null;
+  const pagesUrl = globalVar("UPDATE_URL"), releasesUrl = globalVar("RELEASES_URL");
+  const fromPages = async () => {
+    if (!pagesUrl) return null;
+    const m = await Neutralino.updater.checkForUpdates(pagesUrl);
+    return m ? { version: m.version, resourcesURL: m.resourcesURL, source: "pages" } : null;
+  };
+  const fromRelease = async () => {
+    if (!releasesUrl || !isWindows()) return null;
+    const r = await fetch(releasesUrl, { headers: { Accept: "application/vnd.github+json" }, cache: "no-store" });
+    return r.ok ? releaseUpdate(await r.json()) : null;
+  };
+  const found = await Promise.allSettled([fromPages(), fromRelease()]);
+  return pickUpdate(appVersion(), found.map((f) => (f.status === "fulfilled" ? f.value : null)));
 }
 
-export async function installUpdate() {
-  await Neutralino.updater.install();
+export async function installUpdate(update) {
+  if (update.source === "pages") {
+    await Neutralino.updater.install();
+  } else {
+    for (const cmd of resourceSwapCommands({ url: update.resourcesURL, appDir: window.NL_PATH })) {
+      const r = await Neutralino.os.execCommand(cmd);
+      if (r.exitCode !== 0) throw new Error(r.stdErr.trim() || "Download failed.");
+    }
+  }
   await Neutralino.app.restartProcess();
 }

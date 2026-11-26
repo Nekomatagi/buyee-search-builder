@@ -29,6 +29,8 @@ fs.writeFileSync(path.join(stage, "README.txt"),
 execFileSync("zip", ["-r", "-q", path.join(out, "BuyeeSearch-win-x64.zip"), "BuyeeSearch"], { cwd: out });
 
 fs.copyFileSync(path.join(dist, "resources.neu"), path.join(site, "resources.neu"));
+// Also attached to the GitHub Release: the app's second update source.
+fs.copyFileSync(path.join(dist, "resources.neu"), path.join(out, "resources.neu"));
 const manifest = {
   applicationId: cfg.applicationId,
   version: cfg.version,
