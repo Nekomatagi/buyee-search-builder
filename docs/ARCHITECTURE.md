@@ -93,17 +93,21 @@ Neutralino storage, kept in `.storage/` next to the exe (portable).
 | `pinned` | keep-on-top on/off |
 | `homeCountry` | 3-letter code of the home flag, e.g. `THA` |
 | `session` | last search: `{ en, ja, edited, src, cond, fmt, ext }` |
-| `notifyUpdates` | `true`/`false`; missing = not asked yet |
-| `notifiedVersion` | last version a notification was shown for |
 
 ## Updates
 
 1. On start, the app fetches `NL_UPDATE_URL` (`https://<owner>.github.io/<repo>/update.json`).
 2. It checks again every 30 minutes, and when the globe is clicked.
-3. If `update.json` has a newer `version`, the globe turns into an up-arrow and, if the user allowed it, a Windows notification is shown once per version (`Neutralino.os.showNotification`).
+3. If `update.json` has a newer `version`, the globe turns into an up-arrow.
 4. Clicking the arrow asks for confirmation, saves the current search, downloads `resources.neu` from the same site, replaces the local one, and restarts.
 
 Only `resources.neu` is updated. The exe itself changes only when the Neutralino version changes, which needs a fresh download from Releases. GitHub Pages is used because Neutralino's updater runs `fetch` inside the page, which needs CORS headers; GitHub Pages provides them, and release-asset downloads don't.
+
+## Start with Windows
+
+The **Windows Startup** switch writes or deletes the value `BuyeeSearchBuilder` under `HKCU\Software\Microsoft\Windows\CurrentVersion\Run` with `reg.exe` (per-user, no admin). The value is `"<exe>" --path="<folder>"`: Windows starts sign-in programs from System32, so `--path` tells Neutralino where `resources.neu` and `.storage` are. The registry is the source of truth; nothing is stored in `.storage`. On every start, if the value points to a different folder, it's rewritten to the running copy.
+
+**Why not Program Files?** Self-update replaces `resources.neu` next to the exe, and programs in Program Files can't write there without admin rights. The portable folder keeps updates silent.
 
 ## Build-time variables
 

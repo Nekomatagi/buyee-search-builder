@@ -9,10 +9,13 @@ The screen runs top to bottom in the order you build a search: product, then con
 | Coloured dot | Switches theme: **Dark → Paper white → Red**. The dot shows the colour of the *next* theme. Your choice is remembered. |
 | Globe | **Green dot:** online. **Red dot:** offline, so translation, the exchange rate and Buyee won't work. Checked every 30 seconds. **Green up-arrow:** an update is ready; click it to restart on the new version. Clicking the globe otherwise checks for updates now. |
 | Pin | **Keep on top:** the window stays above other windows (handy next to your browser). Click again to turn off. Remembered. |
+| Windows Startup | Switch: when it's green, the app opens when you sign in to Windows. No admin rights needed; it appears in Task Manager → Startup apps. If you move the app's folder, open it once from the new place and the setting follows. |
 
 The flags top-right show your home country and Japan. Click the home flag to choose any ASEAN member country; for now this only changes the flag.
 
 **Tip:** to start the app from the taskbar, run it once, right-click its taskbar icon and choose **Pin to taskbar**.
+
+**Several copies?** Each copy of the app (desktop, USB stick) checks for updates itself and shows the arrow when it's behind, so whichever copy you open can be brought up to date.
 
 ## 1. Product
 
@@ -73,7 +76,6 @@ Presets, custom filters, saved words, Buyee filters and theme are stored in the 
 
 - The app checks for a new version when it starts and every 30 minutes.
 - When one is ready, the globe turns into a **green up-arrow**. Click it, choose **Restart and update**, and the app restarts on the new version.
-- **Notifications:** the first time you open version 0.4.0 or later, the app asks whether it may show a Windows notification when an update is ready. Change this any time with **Update notifications: on/off** at the bottom of the app.
 - Your presets, filters, saved words and **your last search** are kept.
 
 ## Your last search

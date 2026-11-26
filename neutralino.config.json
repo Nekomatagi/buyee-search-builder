@@ -26,8 +26,7 @@
     "clipboard.writeText",
     "filesystem.writeBinaryFile",
     "window.setAlwaysOnTop",
-    "window.setTitle",
-    "os.showNotification"
+    "window.setTitle"
   ],
   "globalVariables": {
     "DEEPL_KEY": "",
