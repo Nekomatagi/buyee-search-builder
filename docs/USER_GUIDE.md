@@ -8,12 +8,17 @@ The screen runs top to bottom in the order you build a search: product, then con
 |---|---|
 | Coloured dot | Switches theme: **Dark → Paper white → Red**. The dot shows the colour of the *next* theme. Your choice is remembered. |
 | Globe | **Green dot:** online. **Red dot:** offline, so translation, the exchange rate and Buyee won't work. Checked every 30 seconds. |
+| Pin | **Keep on top:** the window stays above other windows (handy next to your browser). Click again to turn off. Remembered. |
+
+The flags top-right (🇹🇭 → 🇯🇵) are decoration.
+
+**Tip:** to start the app from the taskbar, run it once, right-click its taskbar icon and choose **Pin to taskbar**.
 
 ## 1. Product
 
 - **English box:** type the product. After a short pause (or when you press **Enter**), the Japanese appears underneath with romaji in grey.
 - **Typing Japanese directly** skips translation. Use this when you've found a keyword you like on Buyee.
-- **Japanese box:** you can edit the translation. When you change it, the app remembers your version for that English word from then on.
+- **Japanese box:** you can edit the translation. While it holds your own edit it has a bold frame, and the app remembers your version for that English word from then on.
 - The small label on the right says where the Japanese came from:
 
 | Label | Meaning |
@@ -58,7 +63,7 @@ These are Buyee's own search settings. They're sent to Buyee when you click **Op
 
 ## Open on Buyee
 
-The orange button at the bottom opens the search on Buyee (Yahoo! Auctions) in your browser, with all filters applied. It shows how many Buyee filters are on.
+The orange button, always visible at the bottom of the window, opens the search on Buyee (Yahoo! Auctions) in your browser, with all filters applied. It shows how many Buyee filters are on.
 
 ## Your data
 
