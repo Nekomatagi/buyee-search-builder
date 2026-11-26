@@ -28,6 +28,7 @@ Only `platform.js` knows about Neutralino. Everything else also runs in a normal
 | `resources/js/core.js` | Pure, unit-tested logic |
 | `resources/js/platform.js` | Native features through Neutralino |
 | `resources/js/romaji.js` | Japanese → romaji |
+| `resources/js/flags.js` | ASEAN and Japan flags (drawn SVG; Windows has no flag emojis) |
 | `resources/data/defaults.json` | Default presets, conditions, formats, filters |
 | `resources/dict/` | kuromoji dictionary (18 MB) |
 | `resources/js/vendor/` | Neutralino client, kuroshiro, analyzer (pinned versions) |
@@ -89,6 +90,8 @@ Neutralino storage, kept in `.storage/` next to the exe (portable).
 | `buyeeFilters` | `{ conditions, options, currency, prices }` |
 | `thbRate` | `{ rate, at, date }`, baht per yen, refreshed every 12 hours |
 | `theme` | `dark`, `paper` or `red` |
+| `pinned` | keep-on-top on/off |
+| `homeCountry` | 3-letter code of the home flag, e.g. `THA` |
 
 ## Updates
 

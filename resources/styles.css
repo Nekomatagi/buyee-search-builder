@@ -21,7 +21,17 @@ body { margin: 0; background: var(--bg); color: var(--ink); transition: backgrou
 .wrap { max-width: 640px; margin: 0 auto; padding: 12px 20px 28px; }
 .topbar { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; }
 .tools { display: flex; gap: 6px; }
-.flags { display: flex; gap: 6px; }
+.flags { display: flex; gap: 6px; align-items: center; }
+.home-pick { position: relative; }
+.flag-btn { display: flex; align-items: center; gap: 3px; padding: 3px; border: 0; border-radius: 6px; background: transparent; color: var(--ink); }
+.flag-btn::after { content: "▾"; font-size: 10px; color: var(--mute); }
+.flag-btn:hover { background: var(--sel); }
+.home-list { position: absolute; right: 0; top: calc(100% + 4px); z-index: 20; margin: 0; padding: 4px; list-style: none;
+  background: var(--bg); border: 1px solid var(--line); border-radius: 10px; box-shadow: 0 10px 28px rgba(0,0,0,.3); min-width: 112px; }
+.home-list[hidden] { display: none; }
+.home-list li { display: flex; align-items: center; gap: 8px; padding: 5px 8px; border-radius: 6px; cursor: pointer; font-size: 13px; font-weight: 600; letter-spacing: .04em; }
+.home-list li:hover, .home-list li:focus { background: var(--sel); outline: none; }
+.home-list li[aria-selected="true"] { background: var(--sel); }
 .flag { width: 27px; height: 18px; border-radius: 3px; box-shadow: 0 0 0 1px rgba(0,0,0,.18); display: block; }
 #pinBtn.on { background: var(--ink); color: var(--bg); border-color: var(--ink); }
 .icon-btn { position: relative; width: 32px; height: 32px; display: inline-grid; place-items: center;

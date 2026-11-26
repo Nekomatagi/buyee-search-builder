@@ -31,13 +31,12 @@
         </svg>
       </button>
     </div>
-    <div class="flags" aria-label="Thailand to Japan">
-      <svg class="flag" viewBox="0 0 30 20" role="img" aria-label="Thailand">
-        <rect width="30" height="20" fill="#A51931"/><rect y="3.33" width="30" height="13.34" fill="#F4F5F8"/><rect y="6.67" width="30" height="6.66" fill="#2D2A4A"/>
-      </svg>
-      <svg class="flag" viewBox="0 0 30 20" role="img" aria-label="Japan">
-        <rect width="30" height="20" fill="#FFFFFF"/><circle cx="15" cy="10" r="6" fill="#BC002D"/>
-      </svg>
+    <div class="flags">
+      <div class="home-pick">
+        <button id="homeBtn" class="flag-btn" type="button" aria-haspopup="listbox" aria-expanded="false" title="Home country"></button>
+        <ul id="homeList" class="home-list" role="listbox" aria-label="Home country" hidden></ul>
+      </div>
+      <span id="jpFlag"></span>
     </div>
   </div>
 

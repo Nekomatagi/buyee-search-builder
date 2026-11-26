@@ -3,6 +3,7 @@ import {
   addItem, removeItem, seedWords, BUYEE_CONDITIONS, BUYEE_OPTIONS, thbToJpy, nextTheme, THEMES
 } from "./core.js";
 import { romaji, initRomaji } from "./romaji.js";
+import { ASEAN, JAPAN, flagSvg, findCountry } from "./flags.js";
 import {
   isDesktop, initPlatform, appVersion, load, save, translateWithDeepL,
   hasDeepLKey, copyText, openUrl, checkForUpdate, installUpdate, setAlwaysOnTop
@@ -332,6 +333,41 @@ async function main() {
   // theme and internet indicator
   let theme = applyTheme(await load("theme", "dark"));
   $("themeBtn").addEventListener("click", () => { theme = applyTheme(nextTheme(theme)); save("theme", theme); });
+  // home-country flag picker (ASEAN). Decorative: only the flag changes.
+  let home = findCountry(await load("homeCountry", "THA"));
+  const list = $("homeList");
+  $("jpFlag").innerHTML = flagSvg(JAPAN);
+  const showHome = () => {
+    $("homeBtn").innerHTML = flagSvg(home);
+    $("homeBtn").title = `Home: ${home.name}`;
+    list.innerHTML = ASEAN.map((c) => `<li role="option" tabindex="-1" data-code="${c.code}" aria-selected="${c.code === home.code}" title="${c.name}">${flagSvg(c)}<span>${c.code}</span></li>`).join("");
+  };
+  const closeList = () => { list.hidden = true; $("homeBtn").setAttribute("aria-expanded", "false"); };
+  showHome();
+  $("homeBtn").addEventListener("click", (e) => {
+    e.stopPropagation();
+    list.hidden = !list.hidden;
+    $("homeBtn").setAttribute("aria-expanded", String(!list.hidden));
+    if (!list.hidden) list.querySelector('[aria-selected="true"]')?.focus();
+  });
+  list.addEventListener("click", (e) => {
+    const li = e.target.closest("li");
+    if (!li) return;
+    home = findCountry(li.dataset.code);
+    save("homeCountry", home.code);
+    showHome();
+    closeList();
+  });
+  list.addEventListener("keydown", (e) => {
+    const items = [...list.querySelectorAll("li")];
+    const i = items.indexOf(document.activeElement);
+    if (e.key === "ArrowDown") { e.preventDefault(); items[Math.min(i + 1, items.length - 1)].focus(); }
+    if (e.key === "ArrowUp") { e.preventDefault(); items[Math.max(i - 1, 0)].focus(); }
+    if (e.key === "Enter" && i >= 0) items[i].click();
+  });
+  document.addEventListener("click", (e) => { if (!e.target.closest(".home-pick")) closeList(); });
+  document.addEventListener("keydown", (e) => { if (e.key === "Escape") closeList(); });
+
   let pinned = await load("pinned", false);
   const showPin = () => {
     $("pinBtn").classList.toggle("on", pinned);

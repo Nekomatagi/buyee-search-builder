@@ -150,3 +150,16 @@ test("defaults: every select starts with an empty 'any' option", () => {
   for (const k of ["conditions", "formats", "filters"]) assert.equal(defaults[k][0].ja, "");
   assert.equal(defaults.formats[0].en, "Any format");
 });
+
+test("ASEAN picker lists all 11 members with unique 3-letter codes", async () => {
+  globalThis.window = globalThis.window || {};
+  const f = await import("../resources/js/flags.js");
+  assert.equal(f.ASEAN.length, 11);
+  assert.equal(f.ASEAN[0].code, "THA");
+  const codes = f.ASEAN.map((c) => c.code);
+  assert.equal(new Set(codes).size, 11);
+  for (const c of codes) assert.match(c, /^[A-Z]{3}$/);
+  assert.ok(codes.includes("TLS"));
+  assert.equal(f.findCountry("nope").code, "THA");
+  assert.match(f.flagSvg(f.JAPAN), /^<svg class="flag"/);
+});
