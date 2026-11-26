@@ -92,7 +92,8 @@
   <section class="out">
     <div class="out-head"><b>Your Japanese search query</b><span class="tag">Generated</span></div>
     <p id="q" class="q" lang="ja"></p>
-    <p id="qRomaji" class="romaji q-romaji"></p>
+    <p id="qRomaji" class="romaji"></p>
+    <p id="qEnglish" class="romaji q-romaji" lang="en" title="What the Japanese query means (DeepL)"></p>
     <button id="copy" class="pri wide" type="button">Copy Japanese query</button>
     <div class="foot">
       <p id="msg" class="hint">Paste into Buyee's search bar.</p>
@@ -106,16 +107,15 @@
       <button id="clearBuyee" class="link" type="button">Clear</button>
     </div>
     <p class="hint">Applied when you open the search on Buyee. They're Buyee settings, so they aren't part of the copied text.</p>
+    <label class="lbl sub" for="sort">Sort results</label>
+    <select id="sort"></select>
     <span class="lbl sub">Item condition</span>
     <div id="bConditions" class="chips"></div>
     <span class="lbl sub">Options</span>
     <div id="bOptions" class="chips"></div>
     <div class="row-head">
       <span class="lbl sub">Price range</span>
-      <select id="currency" class="mini" aria-label="Currency">
-        <option value="JPY">¥ JPY</option>
-        <option value="THB">฿ THB</option>
-      </select>
+<select id="currency" class="mini" aria-label="Currency"></select>
     </div>
     <div class="prices">
       <span class="lbl">Current price</span>

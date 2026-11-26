@@ -1,5 +1,15 @@
 # Changelog
 
+## 0.4.2 — 2026-11-26
+
+Broad first, and see what you changed.
+
+- Selling condition now starts at **Any condition** (format and filter already start at Any/None), so the first search is broad.
+- Any dropdown or price box you change from its default keeps a bold frame, like an edited Japanese box.
+- **Sort results** dropdown in Buyee filters, matching buyee.jp; default **No. of Bids: High to Low**.
+- Prices in **฿ THB** (default), **$ USD** or **¥ JPY**; THB and USD are converted to yen with a daily rate.
+- Under the romaji, the final query is translated back to **English** (DeepL), so you can check what it means.
+
 ## 0.4.1 — 2026-11-26
 
 Windows Startup, and a simpler update flow.

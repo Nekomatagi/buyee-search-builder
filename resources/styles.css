@@ -71,6 +71,9 @@ input:focus, select:focus, button:focus-visible { outline: 2px solid var(--ok); 
 .ja-head { display: flex; justify-content: space-between; align-items: baseline; gap: 8px; margin-top: 8px; }
 #ja, #fJa { font-size: 17px; font-weight: 600; }
 #ja.edited, #fJa.edited { border: 2px solid var(--ink); padding: 8px 11px; }
+/* Any setting moved off its default keeps a bold frame, like an edited Japanese box. */
+select.changed, input.changed { border: 2px solid var(--ink); padding: 8px 11px; }
+select.mini.changed { padding: 3px 7px; }
 .romaji { margin: 4px 2px 0; font-size: 13px; color: var(--mute); font-style: italic; min-height: 1.5em; overflow-wrap: anywhere; }
 .src { font-size: 11px; color: var(--mute); text-align: right; }
 .src.err { color: var(--warn); }

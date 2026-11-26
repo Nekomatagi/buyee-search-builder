@@ -32,13 +32,33 @@ test("buyeeUrl adds Buyee filters the way buyee.jp does", () => {
   const u = new URL(c.buyeeUrl("デジカメ", {
     conditions: ["1", "3", "bogus"],
     options: ["new", "freeshipping", "buynow", "hack"],
-    prices: { currentMin: 1111, currentMax: "2222", buyoutMin: 0, buyoutMax: 4444.4 }
+    prices: { currentMin: 1111, currentMax: "2222", buyoutMin: 0, buyoutMax: 4444.4 },
+    sort: "bids-desc"
   }));
   const q = Object.fromEntries(u.searchParams);
   assert.deepEqual(q, {
     aucminprice: "1111", aucmaxprice: "2222", aucmax_bidorbuy_price: "4444",
-    new: "1", freeshipping: "1", buynow: "1", item_status: "1,3", translationType: "98"
+    new: "1", freeshipping: "1", buynow: "1", item_status: "1,3",
+    sort: "bids", order: "a", translationType: "98"
   });
+  const pop = new URL(c.buyeeUrl("x", { sort: "popular" })).searchParams;
+  assert.equal(pop.get("sort"), "score");
+  assert.equal(pop.get("order"), null);
+  assert.equal(new URL(c.buyeeUrl("x", { sort: "nope" })).searchParams.get("sort"), null);
+});
+
+test("Buyee sorts: 10 options, default is bids high to low", () => {
+  assert.equal(c.BUYEE_SORTS.length, 10);
+  assert.equal(c.DEFAULT_SORT, "bids-desc");
+  assert.equal(new Set(c.BUYEE_SORTS.map((x) => x.id)).size, 10);
+});
+
+test("currencies and back-translation body", () => {
+  assert.deepEqual(c.CURRENCIES.map((x) => x.code), ["THB", "USD", "JPY"]);
+  assert.equal(c.DEFAULT_CURRENCY, "THB");
+  assert.equal(c.toJpy(1, 0.0064), 156);
+  const b = JSON.parse(c.deeplBackBody("腕時計 中古"));
+  assert.deepEqual(b, { text: ["腕時計 中古"], source_lang: "JA", target_lang: "EN-US" });
 });
 
 test("thbToJpy converts with baht-per-yen rate", () => {

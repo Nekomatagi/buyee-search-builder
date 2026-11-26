@@ -3,7 +3,7 @@
 // translation reports that it needs the desktop app).
 
 import {
-  curlCommand, deeplBody, parseCurlOutput, cleanTranslation, searchClean, isNewer,
+  curlCommand, deeplBody, deeplBackBody, parseCurlOutput, cleanTranslation, searchClean, isNewer,
   exePathFrom, regAddCommand, regDeleteCommand, regQueryCommand, parseRegQuery
 } from "./core.js";
 
@@ -50,12 +50,12 @@ export function hasDeepLKey() {
 // after one refusal the app stops sending them for the rest of the session.
 let useInstructions = true;
 
-async function callDeepL(text, instructions) {
+async function callDeepL(text, instructions, body) {
   const key = globalVar("DEEPL_KEY");
   const tmp = await Neutralino.os.getPath("temp");
   const windows = window.NL_OS === "Windows";
-  const bodyFile = `${tmp}${windows ? "\\" : "/"}buyee-deepl-${Date.now()}.json`;
-  await Neutralino.filesystem.writeFile(bodyFile, deeplBody(text, { instructions }));
+  const bodyFile = `${tmp}${windows ? "\\" : "/"}buyee-deepl-${Date.now()}-${Math.random().toString(36).slice(2, 7)}.json`;
+  await Neutralino.filesystem.writeFile(bodyFile, body || deeplBody(text, { instructions }));
   try {
     const r = await Neutralino.os.execCommand(curlCommand({ key, bodyFile, windows }));
     if (r.exitCode !== 0 && !r.stdOut) throw new Error(r.stdErr.trim() || "Could not reach DeepL.");
@@ -98,6 +98,12 @@ export async function setStartup(on) {
   if (!isWindows()) throw new Error("Start with Windows works on Windows only.");
   const r = await Neutralino.os.execCommand(on ? regAddCommand(currentExePath()) : regDeleteCommand());
   if (r.exitCode !== 0 && on) throw new Error(r.stdErr.trim() || "Couldn't change the Windows startup setting.");
+}
+
+// Japanese -> English, used to show what the final query means.
+export async function translateToEnglish(text) {
+  if (!isDesktop || !globalVar("DEEPL_KEY")) return "";
+  return cleanTranslation(await callDeepL(text, false, deeplBackBody(text)));
 }
 
 // ---- clipboard and links

@@ -41,7 +41,7 @@ The flags top-right show your home country and Japan. Click the home flag to cho
 
 ## 2–4. Selling condition, format, additional filter
 
-These add Japanese words to the search:
+These add Japanese words to the search. They start at **Any** / **None** for the broadest results; anything you change keeps a bold frame so you can see it at a glance (the same goes for Buyee's sort, currency and price boxes).
 
 | Dropdown | Examples |
 |---|---|
@@ -53,7 +53,7 @@ These add Japanese words to the search:
 
 ## Your Japanese search query
 
-The finished query, with romaji underneath. **Copy Japanese query** copies it for pasting into Buyee's search bar. **Reset** clears the product and dropdowns.
+The finished query, with romaji underneath and, below that, its meaning in English (translated back by DeepL). **Copy Japanese query** copies it for pasting into Buyee's search bar. **Reset** clears the product and dropdowns.
 
 ## 5. Buyee filters
 
@@ -61,7 +61,8 @@ These are Buyee's own search settings. They're sent to Buyee when you click **Op
 
 - **Item condition:** Unused item, Close to unused, No noticeable scratches or stains, Slight scratches or stains, Visible scratches or stains, Overall poor condition. Pick any number.
 - **Options:** Newly posted, Free delivery within Japan, With pictures, Buyee recommended, Ending within 1 hour, Official authentication, Buy It Now items only.
-- **Price range:** current price and buyout price, min and max. Choose **¥ JPY** or **฿ THB**. Baht are converted to yen with a daily exchange rate, shown under the prices.
+- **Sort results:** the same orders as buyee.jp. Default: **No. of Bids: High to Low**.
+- **Price range:** current price and buyout price, min and max. Choose **฿ THB** (default), **$ USD** or **¥ JPY**. Baht and dollars are converted to yen with a daily exchange rate, shown under the prices.
 - **Clear** removes all Buyee filters. Your filters are remembered between sessions.
 
 ## Open on Buyee

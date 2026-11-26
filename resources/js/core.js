@@ -53,6 +53,22 @@ export const BUYEE_OPTIONS = [
   { param: "buynow", en: "Buy It Now items only" }
 ];
 
+// Buyee's "sort" dropdown (read from buyee.jp, Nov 2026). Note Buyee's bid
+// sort is inverted: "High to Low" is order=a.
+export const BUYEE_SORTS = [
+  { id: "recommended", en: "Recommended", sort: "recommended", order: "recommended" },
+  { id: "price-asc", en: "Price: Low to High", sort: "cbids", order: "a" },
+  { id: "price-desc", en: "Price: High to Low", sort: "cbids", order: "d" },
+  { id: "bids-desc", en: "No. of Bids: High to Low", sort: "bids", order: "a" },
+  { id: "bids-asc", en: "No. of Bids: Low to High", sort: "bids", order: "d" },
+  { id: "ending", en: "Time: Ending Soon", sort: "end", order: "a" },
+  { id: "newest", en: "Time: Newly Listed", sort: "end", order: "d" },
+  { id: "buyout-asc", en: "Buyout Price: Low to High", sort: "bidorbuy", order: "a" },
+  { id: "buyout-desc", en: "Buyout Price: High to Low", sort: "bidorbuy", order: "d" },
+  { id: "popular", en: "Most Popular + Newly Listed", sort: "score", order: "" }
+];
+export const DEFAULT_SORT = "bids-desc";
+
 const PRICE_PARAMS = {
   currentMin: "aucminprice",
   currentMax: "aucmaxprice",
@@ -72,15 +88,30 @@ export function buyeeUrl(query, filters = {}) {
   for (const o of filters.options || []) if (allowed.has(o)) p.set(o, "1");
   const conds = (filters.conditions || []).filter((c) => BUYEE_CONDITIONS.some((x) => x.id === c));
   if (conds.length) p.set("item_status", conds.join(","));
+  const so = BUYEE_SORTS.find((x) => x.id === filters.sort);
+  if (so) { p.set("sort", so.sort); if (so.order) p.set("order", so.order); }
   p.set("translationType", "98"); // search the Japanese as typed, no auto-translate
   return BUYEE_SEARCH + encodeURIComponent(query) + "?" + p.toString();
 }
 
-// Baht -> yen with a rate expressed as baht per 1 yen.
-export function thbToJpy(thb, thbPerJpy) {
-  const v = Number(thb), r = Number(thbPerJpy);
+// Foreign money -> yen, with the rate expressed as units per 1 yen
+// (e.g. baht per yen, dollars per yen) as open.er-api.com/v6/latest/JPY gives it.
+export function toJpy(amount, perJpy) {
+  const v = Number(amount), r = Number(perJpy);
   if (!(v > 0) || !(r > 0)) return null;
   return Math.round(v / r);
+}
+export const thbToJpy = toJpy;
+export const CURRENCIES = [
+  { code: "THB", symbol: "฿" },
+  { code: "USD", symbol: "$" },
+  { code: "JPY", symbol: "¥" }
+];
+export const DEFAULT_CURRENCY = "THB";
+
+// Japanese -> English, to show what the final query means.
+export function deeplBackBody(text) {
+  return JSON.stringify({ text: [String(text)], source_lang: "JA", target_lang: "EN-US" });
 }
 
 // ---- Start with Windows (per-user, no admin): HKCU\...\Run registry value

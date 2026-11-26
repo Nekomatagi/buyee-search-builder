@@ -1,12 +1,13 @@
 import {
   hasJapanese, isUntranslated, buildQuery, buyeeUrl, lookupWord, rememberWord,
-  addItem, removeItem, seedWords, BUYEE_CONDITIONS, BUYEE_OPTIONS, thbToJpy, nextTheme, THEMES
+  addItem, removeItem, seedWords, BUYEE_CONDITIONS, BUYEE_OPTIONS, BUYEE_SORTS, DEFAULT_SORT,
+  CURRENCIES, DEFAULT_CURRENCY, toJpy, nextTheme, THEMES
 } from "./core.js";
 import { romaji, initRomaji } from "./romaji.js";
 import { ASEAN, JAPAN, flagSvg, findCountry } from "./flags.js";
 import {
   isDesktop, initPlatform, appVersion, load, save, translateWithDeepL,
-  hasDeepLKey, copyText, openUrl, checkForUpdate, installUpdate, setAlwaysOnTop,
+  hasDeepLKey, copyText, openUrl, checkForUpdate, installUpdate, setAlwaysOnTop, translateToEnglish,
   isWindows, currentExePath, getStartupPath, setStartup
 } from "./platform.js";
 
@@ -118,10 +119,38 @@ function renderFilters(keep) {
   fillSelect($("ext"), [...state.defaults.filters, ...state.filters], keep);
 }
 
+// Bold frame on any dropdown moved off its default ("Any …"/"None").
+function markChanged() {
+  for (const id of ["cond", "fmt", "ext"]) $(id).classList.toggle("changed", $(id).value !== "");
+}
+
+// The final query translated back to English, so you can check its meaning.
+const backCache = new Map();
+let backTimer = null, backSeq = 0;
+function renderBack(q) {
+  clearTimeout(backTimer);
+  const el = $("qEnglish");
+  if (!q || !hasJapanese(q)) { el.textContent = ""; return; }
+  if (backCache.has(q)) { el.textContent = backCache.get(q); return; }
+  el.textContent = "";
+  const mine = ++backSeq;
+  backTimer = setTimeout(async () => {
+    try {
+      const en = await translateToEnglish(q);
+      if (!en) return;
+      backCache.set(q, en);
+      save("backWords", Object.fromEntries([...backCache].slice(-200)));
+      if (mine === backSeq) el.textContent = en;
+    } catch { /* offline or no key: leave empty */ }
+  }, 900);
+}
+
 async function renderQuery() {
   const q = buildQuery([$("ja").value, $("cond").value, $("fmt").value, $("ext").value]);
+  markChanged();
   $("q").textContent = q || "…";
   $("qRomaji").textContent = q ? await romaji(q) : "";
+  renderBack(q);
   document.querySelectorAll("#presets .chip").forEach((c) => c.classList.toggle("on", c.dataset.ja === $("ja").value.trim()));
   saveSession();
   return q;
@@ -197,15 +226,16 @@ function saveSession() {
 
 // ---------- Buyee filters (sent in the Buyee address, not the copied text)
 const RATE_MAX_AGE = 12 * 60 * 60 * 1000;
-async function getThbRate() {
-  const cached = await load("thbRate", null);
+// { rates: { THB, USD } (units per 1 yen), at }
+async function getRates() {
+  const cached = await load("fxRates", null);
   if (cached && Date.now() - cached.at < RATE_MAX_AGE) return cached;
   try {
     const r = await fetch("https://open.er-api.com/v6/latest/JPY", { cache: "no-store" });
     const j = await r.json();
-    const fresh = { rate: j.rates.THB, at: Date.now(), date: j.time_last_update_utc };
-    if (!(fresh.rate > 0)) throw new Error("no rate");
-    await save("thbRate", fresh);
+    const fresh = { rates: { THB: j.rates.THB, USD: j.rates.USD }, at: Date.now() };
+    if (!(fresh.rates.THB > 0 && fresh.rates.USD > 0)) throw new Error("no rate");
+    await save("fxRates", fresh);
     return fresh;
   } catch {
     return cached; // may be old or null
@@ -247,7 +277,8 @@ async function main() {
   fillSelect($("cond"), state.defaults.conditions);
   fillSelect($("fmt"), state.defaults.formats);
   renderFilters();
-  $("cond").value = "中古";
+  $("cond").value = "";
+  for (const [k, v] of Object.entries(await load("backWords", {}))) backCache.set(k, v);
   const lastExt = (await load("session", {}))?.ext;
   if (lastExt) renderFilters(lastExt);
   $("ver").textContent = `Version ${appVersion()}`;
@@ -325,13 +356,21 @@ async function main() {
   });
   // Buyee filters
   const PRICE_IDS = { currentMin: "curMin", currentMax: "curMax", buyoutMin: "buyMin", buyoutMax: "buyMax" };
-  const emptyBuyee = () => ({ conditions: [], options: [], currency: "JPY", prices: {} });
+  const emptyBuyee = () => ({ conditions: [], options: [], currency: DEFAULT_CURRENCY, sort: DEFAULT_SORT, prices: {} });
+  $("sort").replaceChildren(...BUYEE_SORTS.map((x) => new Option(x.en, x.id)));
+  $("currency").replaceChildren(...CURRENCIES.map((x) => new Option(`${x.symbol} ${x.code}`, x.code)));
   let buyee = { ...emptyBuyee(), ...(await load("buyeeFilters", {})) };
   let rate = null;
 
+  function markBuyee() {
+    $("sort").classList.toggle("changed", buyee.sort !== DEFAULT_SORT);
+    $("currency").classList.toggle("changed", buyee.currency !== DEFAULT_CURRENCY);
+    for (const id of Object.values(PRICE_IDS)) $(id).classList.toggle("changed", $(id).value !== "");
+  }
   function showBuyee() {
     renderBuyeeChips(buyee);
     $("currency").value = buyee.currency;
+    $("sort").value = buyee.sort;
     for (const [k, id] of Object.entries(PRICE_IDS)) $(id).value = buyee.prices[k] ?? "";
     updateCount();
   }
@@ -340,13 +379,15 @@ async function main() {
     $("filterCount").textContent = n ? `· ${n} filter${n > 1 ? "s" : ""}` : "";
   }
   async function updateRate() {
-    if (buyee.currency !== "THB") { $("rateNote").textContent = ""; return; }
-    rate = await getThbRate();
-    $("rateNote").textContent = rate
-      ? `฿1 ≈ ¥${(1 / rate.rate).toFixed(2)} (rate from ${new Date(rate.at).toLocaleDateString()}). Buyee gets the prices in yen.`
+    if (buyee.currency === "JPY") { $("rateNote").textContent = ""; return; }
+    rate = await getRates();
+    const sym = CURRENCIES.find((x) => x.code === buyee.currency).symbol;
+    const per = rate && rate.rates[buyee.currency];
+    $("rateNote").textContent = per
+      ? `${sym}1 ≈ ¥${(1 / per).toFixed(2)} (rate from ${new Date(rate.at).toLocaleDateString()}). Buyee gets the prices in yen.`
       : "No exchange rate yet (offline). Switch to ¥ JPY or connect to the internet.";
   }
-  const persist = () => { save("buyeeFilters", buyee); updateCount(); };
+  const persist = () => { save("buyeeFilters", buyee); updateCount(); markBuyee(); };
 
   for (const box of ["bConditions", "bOptions"]) {
     $(box).addEventListener("click", (e) => {
@@ -364,8 +405,10 @@ async function main() {
     $(id).addEventListener("input", () => { buyee.prices[k] = $(id).value; persist(); });
   }
   $("currency").addEventListener("change", () => { buyee.currency = $("currency").value; persist(); updateRate(); });
+  $("sort").addEventListener("change", () => { buyee.sort = $("sort").value; persist(); });
   $("clearBuyee").addEventListener("click", () => { buyee = emptyBuyee(); persist(); showBuyee(); updateRate(); });
   showBuyee();
+  markBuyee();
   updateRate();
 
   $("open").addEventListener("click", async () => {
@@ -375,12 +418,12 @@ async function main() {
     for (const [k, v] of Object.entries(buyee.prices)) {
       if (!(Number(v) > 0)) continue;
       if (buyee.currency === "JPY") prices[k] = Number(v);
-      else if (rate) prices[k] = thbToJpy(v, rate.rate);
+      else if (rate && rate.rates[buyee.currency]) prices[k] = toJpy(v, rate.rates[buyee.currency]);
     }
-    if (buyee.currency === "THB" && !rate && Object.keys(buyee.prices).some((k) => Number(buyee.prices[k]) > 0)) {
+    if (buyee.currency !== "JPY" && !rate && Object.keys(buyee.prices).some((k) => Number(buyee.prices[k]) > 0)) {
       flash("Prices skipped: no exchange rate. Use ¥ JPY.");
     }
-    openUrl(buyeeUrl(q, { conditions: buyee.conditions, options: buyee.options, prices }));
+    openUrl(buyeeUrl(q, { conditions: buyee.conditions, options: buyee.options, prices, sort: buyee.sort }));
   });
 
   // theme and internet indicator
@@ -467,7 +510,7 @@ async function main() {
   window.addEventListener("offline", checkNet);
   $("reset").addEventListener("click", () => {
     $("en").value = ""; $("ja").value = ""; $("ja").classList.remove("edited"); $("src").textContent = ""; $("jaRomaji").textContent = "";
-    $("cond").value = "中古"; $("fmt").value = ""; $("ext").value = "";
+    $("cond").value = ""; $("fmt").value = ""; $("ext").value = "";
     renderQuery(); $("en").focus();
   });
 
