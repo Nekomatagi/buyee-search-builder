@@ -1,5 +1,5 @@
 {
-  "_about": "Translation quality test. Each English input passes if DeepL's cleaned output matches one of the accepted answers (spaces ignored). Edit this list to change what 'good' means.",
+  "_about": "Translation quality test. Each English input passes if DeepL's cleaned output matches one of the accepted answers (spaces and letter case ignored). Edit this list to change what 'good' means.",
   "cases": [
     { "en": "surf fishing reel", "accept": ["投げ釣り リール", "投げリール", "投げ釣りリール"] },
     { "en": "surf fishing rod", "accept": ["投げ竿", "サーフロッド", "投竿"] },
@@ -10,6 +10,8 @@
     { "en": "Nintendo 3DS LL", "accept": ["ニンテンドー3DS LL", "3DS LL"] },
     { "en": "shimano ocea conquest", "accept": ["シマノ オシアコンクエスト", "シマノ オシア コンクエスト"] },
     { "en": "seiko automatic watch junk", "accept": ["セイコー 自動巻き 腕時計 ジャンク", "セイコー 自動巻 腕時計 ジャンク", "セイコー 自動巻き腕時計 ジャンク", "セイコー 自動巻き腕時計 ジャンク品", "セイコー 自動巻き ジャンク"] },
-    { "en": "bait reel", "accept": ["ベイトリール"] }
+    { "en": "bait reel", "accept": ["ベイトリール"] },
+    { "en": "bass pro shops cap", "accept": ["Bass Pro Shops キャップ", "Bass Pro Shops 帽子"] },
+    { "en": "abu garcia bait reel", "accept": ["Abu Garcia ベイトリール", "アブガルシア ベイトリール"] }
   ]
 }

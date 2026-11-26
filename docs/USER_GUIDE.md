@@ -45,9 +45,13 @@ These add Japanese words to the search. They start at **Any** / **None** for the
 
 | Dropdown | Examples |
 |---|---|
-| Selling condition | 中古 (used), 稼働品 (running, for watches), ジャンク (junk), 美品 (excellent) |
+| Selling condition | Used (Buyee filter), 稼働品 (running, for watches), ジャンク (junk), 美品 (excellent) |
 | Selling format | Any format, 1円 (¥1-start auction), まとめ売り (bulk lot), セット (set) |
 | Additional filter | 本体のみ (unit only), 箱付き (with box), 部品取り (for parts), plus your own |
+
+**Used / second-hand** is sent to Buyee as its *used* condition filter instead of the word 中古: most sellers never write 中古 in the title, so the word hid about 9 in 10 listings. If you tick conditions in Buyee filters (section 5), those win.
+
+**Brands:** foreign brands stay in English (*bass pro shops cap* → *Bass Pro Shops キャップ*), because that's how Japanese sellers list them. Japanese brands go into katakana (シマノ, ダイワ).
 
 **+ Add custom filter:** type a filter in English or Japanese, check the Japanese and romaji, then click **Add filter**. It's added to the list and selected.
 

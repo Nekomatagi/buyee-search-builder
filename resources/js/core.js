@@ -25,7 +25,7 @@ export function buildQuery(parts) {
   const out = [];
   for (const p of parts) {
     const v = String(p || "").replace(/\s+/g, " ").trim();
-    if (!v || seen.has(v)) continue;
+    if (!v || seen.has(v) || isFilterToken(v)) continue;
     seen.add(v);
     out.push(v);
   }
@@ -42,6 +42,23 @@ export const BUYEE_CONDITIONS = [
   { id: "6", en: "Visible scratches or stains" },
   { id: "7", en: "Overall poor condition" }
 ];
+
+// Dropdown values that start with "@" are Buyee filters, not search words.
+// "Used" is one: sellers rarely type 中古 in titles, so the keyword threw away
+// most listings (230 hits -> 22 in a Nov 2026 test). Buyee's condition filter
+// uses the condition every seller must pick instead.
+export const USED = "@used";
+export const USED_STATUSES = ["3", "4", "5", "6", "7"];
+export function isFilterToken(v) {
+  return String(v || "").startsWith("@");
+}
+
+// Buyee condition ids for the Open link: ticks in Buyee filters win;
+// otherwise "Used" in Selling condition means every used grade.
+export function conditionsFor(sellingCondition, ticked = []) {
+  if (ticked.length) return ticked;
+  return sellingCondition === USED ? [...USED_STATUSES] : [];
+}
 
 export const BUYEE_OPTIONS = [
   { param: "new", en: "Newly posted" },
@@ -172,7 +189,8 @@ export const DEEPL_CONTEXT =
 export const DEEPL_INSTRUCTIONS = [
   "I am sourcing second-hand goods in Japan. Translate the text into the search keywords Japanese sellers write in Yahoo! Auctions and Mercari listing titles, not into a sentence.",
   "Prefer the short everyday forms sellers use, for example デジカメ for digital camera, 投げ竿 for surf fishing rod, 投げ釣り リール for surf fishing reel.",
-  "Write brand and model names in the katakana Japanese sellers use (シマノ, ダイワ, セイコー, オシアコンクエスト). Keep model numbers and letters like SP, LL, 3DS as they are.",
+  "Keep brand names from outside Japan in their original English spelling, as sellers write them (Bass Pro Shops, Abu Garcia, Zippo, Coleman). Translate only the item words around them.",
+  "Write Japanese brand and model names in the katakana Japanese sellers use (シマノ, ダイワ, セイコー, オシアコンクエスト). Keep model numbers and letters like SP, LL, 3DS as they are.",
   "Separate keywords with a single space. Do not add particles such as の or 用, brackets, or punctuation."
 ];
 
@@ -204,6 +222,20 @@ export function searchClean(text) {
 // DeepL returns the input unchanged when it can't translate (e.g. unknown brand names).
 export function isUntranslated(source, result) {
   return !hasJapanese(result);
+}
+
+// Saved translations are reset once when the translation rules change, so old
+// answers (like バスプロショップス for Bass Pro Shops) don't stick around.
+// Entries that already keep Latin letters next to Japanese are kept: those are
+// usually hand edits like "bass pro shops キャップ".
+export const WORDS_REV = 2;
+export function migrateWords(saved, rev) {
+  const out = {};
+  for (const [en, ja] of Object.entries(saved || {})) {
+    if (!hasJapanese(ja)) continue;
+    if (rev >= WORDS_REV || /[A-Za-z]/.test(ja)) out[en] = ja;
+  }
+  return out;
 }
 
 // Command line for Windows' built-in curl.exe. The body goes in a UTF-8 file so

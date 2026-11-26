@@ -2,7 +2,7 @@
 
 A small Windows app that turns a product idea into the Japanese search that finds it on [Buyee](https://buyee.jp), with Buyee's filters already set.
 
-Type **"surf fishing reel"**, get **投げ釣り リール** (*nagezuri rīru*), add 中古 and まとめ売り from the dropdowns, tick *Free delivery within Japan*, and open the search on Buyee in one click.
+Type **"surf fishing reel"**, get **投げ釣り リール** (*nagezuri rīru*), add *Used* and まとめ売り from the dropdowns, tick *Free delivery within Japan*, and open the search on Buyee in one click.
 
 - **English → seller Japanese.** DeepL is briefed like a sourcer ("give the keywords sellers use in listing titles"), so you get デジカメ, not デジタルカメラ.
 - **Romaji under every Japanese line**, generated offline.

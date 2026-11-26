@@ -12,7 +12,7 @@
   ],
   "conditions": [
     { "en": "Any condition", "ja": "" },
-    { "en": "Used / second-hand", "ja": "中古" },
+    { "en": "Used / second-hand", "ja": "@used" },
     { "en": "Running, for watches", "ja": "稼働品" },
     { "en": "Working", "ja": "動作品" },
     { "en": "Tested and working", "ja": "動作確認済み" },
