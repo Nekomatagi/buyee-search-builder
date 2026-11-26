@@ -74,6 +74,7 @@ https://buyee.jp/item/search/query/<query>?<filters>&translationType=98
 | Buy It Now only | `buynow` | `1` |
 | Current price (¥) | `aucminprice`, `aucmaxprice` | integer yen |
 | Buyout price (¥) | `aucmin_bidorbuy_price`, `aucmax_bidorbuy_price` | integer yen |
+| Sort | `sort`, `order` | `recommended/recommended`, price `cbids` a/d, bids `bids` (**a = high→low**, d = low→high), ending `end/a`, newest `end/d`, buyout `bidorbuy` a/d, popular `score` (no order) |
 | Search as typed | `translationType` | `98` (Direct Search, no auto-translate) |
 
 If Buyee changes these names, update `BUYEE_CONDITIONS`, `BUYEE_OPTIONS` and `PRICE_PARAMS` in `core.js` and the matching test.
@@ -88,7 +89,8 @@ Neutralino storage, kept in `.storage/` next to the exe (portable).
 | `presets` | `[{ en, ja }]` |
 | `filters` | custom additional filters `[{ en, ja }]` |
 | `buyeeFilters` | `{ conditions, options, currency, prices }` |
-| `thbRate` | `{ rate, at, date }`, baht per yen, refreshed every 12 hours |
+| `fxRates` | `{ rates: { THB, USD }, at }`, units per yen, refreshed every 12 hours |
+| `backWords` | cache of query → English back-translations (last 200) |
 | `theme` | `dark`, `paper` or `red` |
 | `pinned` | keep-on-top on/off |
 | `homeCountry` | 3-letter code of the home flag, e.g. `THA` |
