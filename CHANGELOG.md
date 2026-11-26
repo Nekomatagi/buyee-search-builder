@@ -1,5 +1,12 @@
 # Changelog
 
+## 0.4.1 — 2026-11-26
+
+Windows Startup, and a simpler update flow.
+
+- New **Windows Startup** switch (after the pin): opens the app when you sign in to Windows. Per-user (no admin), visible in Task Manager → Startup apps; if you move the app's folder, the startup entry follows the copy you last opened.
+- Removed the update-notification permission prompt and Windows notifications: the green up-arrow on the globe already shows when an update is ready, and the app checks in the background.
+
 ## 0.4.0 — 2026-11-26
 
 Updates you notice, and your search kept.

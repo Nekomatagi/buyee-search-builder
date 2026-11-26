@@ -2,7 +2,10 @@
 // runs in a plain browser for development (storage falls back to localStorage,
 // translation reports that it needs the desktop app).
 
-import { curlCommand, deeplBody, parseCurlOutput, cleanTranslation, searchClean, isNewer } from "./core.js";
+import {
+  curlCommand, deeplBody, parseCurlOutput, cleanTranslation, searchClean, isNewer,
+  exePathFrom, regAddCommand, regDeleteCommand, regQueryCommand, parseRegQuery
+} from "./core.js";
 
 export const isDesktop = typeof window.Neutralino !== "undefined" && typeof window.NL_PORT !== "undefined";
 
@@ -76,16 +79,25 @@ export async function translateWithDeepL(text) {
   return searchClean(cleanTranslation(ja));
 }
 
-// ---- Windows notification (only called after the user allowed it in the app)
-export async function notify(title, body) {
-  if (!isDesktop) return false;
-  await Neutralino.os.showNotification(title, body, "INFO");
-  return true;
-}
-
 // ---- window
 export async function setAlwaysOnTop(on) {
   if (isDesktop) await Neutralino.window.setAlwaysOnTop(Boolean(on));
+}
+
+// ---- Start with Windows (HKCU Run key; no admin needed)
+export const isWindows = () => isDesktop && window.NL_OS === "Windows";
+export const currentExePath = () => exePathFrom(window.NL_PATH, (window.NL_ARGS || [])[0]);
+
+export async function getStartupPath() {
+  if (!isWindows()) return null;
+  const r = await Neutralino.os.execCommand(regQueryCommand());
+  return r.exitCode === 0 ? parseRegQuery(r.stdOut) : null;
+}
+
+export async function setStartup(on) {
+  if (!isWindows()) throw new Error("Start with Windows works on Windows only.");
+  const r = await Neutralino.os.execCommand(on ? regAddCommand(currentExePath()) : regDeleteCommand());
+  if (r.exitCode !== 0 && on) throw new Error(r.stdErr.trim() || "Couldn't change the Windows startup setting.");
 }
 
 // ---- clipboard and links

@@ -29,6 +29,9 @@
           <path d="M9 3h6l-1 6 3 3v2H7v-2l3-3-1-6zM12 14v7" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round" stroke-linecap="round"/>
         </svg>
       </button>
+      <button id="bootBtn" class="rect-toggle" type="button" role="switch" aria-checked="false" title="Open the app when you sign in to Windows">
+        <span class="knob" aria-hidden="true"></span>Windows Startup
+      </button>
     </div>
     <div class="flags">
       <div class="home-pick">
@@ -133,7 +136,7 @@
     <small id="filterCount"></small>
   </button>
 
-  <p class="ver"><span id="ver"></span> · <button id="notifToggle" class="link ver-link" type="button"></button></p>
+  <p id="ver" class="ver"></p>
 
   <div id="dialog" class="dialog" role="dialog" aria-modal="true" aria-labelledby="dlgTitle" hidden>
     <div class="dlg-card">

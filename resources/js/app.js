@@ -6,7 +6,8 @@ import { romaji, initRomaji } from "./romaji.js";
 import { ASEAN, JAPAN, flagSvg, findCountry } from "./flags.js";
 import {
   isDesktop, initPlatform, appVersion, load, save, translateWithDeepL,
-  hasDeepLKey, copyText, openUrl, checkForUpdate, installUpdate, setAlwaysOnTop, notify
+  hasDeepLKey, copyText, openUrl, checkForUpdate, installUpdate, setAlwaysOnTop,
+  isWindows, currentExePath, getStartupPath, setStartup
 } from "./platform.js";
 
 const $ = (id) => document.getElementById(id);
@@ -435,6 +436,31 @@ async function main() {
     try { await setAlwaysOnTop(pinned); } catch { flash("Couldn't change keep-on-top."); }
   });
 
+  // ---- start with Windows (power icon). The registry is the source of truth.
+  let atStartup = false;
+  const showBoot = () => {
+    $("bootBtn").classList.toggle("on", atStartup);
+    $("bootBtn").setAttribute("aria-checked", String(atStartup));
+    $("bootBtn").title = isWindows()
+      ? `Open the app when you sign in to Windows: ${atStartup ? "on" : "off"}`
+      : "Windows Startup works on Windows only";
+  };
+  try {
+    const registered = await getStartupPath();
+    atStartup = Boolean(registered);
+    // Folder moved? Point the startup entry at this copy.
+    if (registered && registered.toLowerCase() !== currentExePath().toLowerCase()) await setStartup(true);
+  } catch { /* leave as off */ }
+  showBoot();
+  $("bootBtn").addEventListener("click", async () => {
+    try {
+      await setStartup(!atStartup);
+      atStartup = !atStartup;
+      showBoot();
+      flash(atStartup ? "The app will open when you sign in to Windows." : "The app won't open with Windows any more.");
+    } catch (e) { flash(e.message); }
+  });
+
   checkNet();
   setInterval(checkNet, 30000);
   window.addEventListener("online", checkNet);
@@ -451,30 +477,12 @@ async function main() {
     $("qRomaji").textContent = "Romaji unavailable.";
   });
 
-  // ---- updates: arrow on the globe + Windows notification (with permission)
-  let notifyPref = await load("notifyUpdates", null); // null = not asked yet
-  const showNotifPref = () => {
-    $("notifToggle").textContent = `Update notifications: ${notifyPref ? "on" : "off"}`;
-  };
-  showNotifPref();
-  $("notifToggle").addEventListener("click", async () => {
-    notifyPref = !notifyPref;
-    await save("notifyUpdates", notifyPref);
-    showNotifPref();
-    flash(notifyPref ? "You'll get a Windows notification when an update is ready." : "Update notifications are off.");
-  });
-
+  // ---- updates: the globe turns into an up-arrow (checked in the background)
   async function checkUpdates({ manual = false } = {}) {
     const m = await checkForUpdate();
     net.update = m;
     renderNet();
-    if (!m) { if (manual) flash("You're on the latest version."); return; }
-    if (notifyPref && (await load("notifiedVersion", "")) !== m.version) {
-      try {
-        await notify("Buyee Search Builder", `Version ${m.version} is ready. Click the arrow next to the theme dot to restart and update.`);
-        await save("notifiedVersion", m.version);
-      } catch { /* notifications unavailable: the arrow still shows */ }
-    }
+    if (!m && manual) flash("You're on the latest version.");
   }
 
   $("net").addEventListener("click", async () => {
@@ -495,22 +503,7 @@ async function main() {
     try { await installUpdate(); } catch { flash("Update failed. Try again later."); }
   });
 
-  // Ask once, politely, before sending any Windows notification.
-  if (notifyPref === null) {
-    setTimeout(async () => {
-      notifyPref = await ask({
-        title: "Get update notifications?",
-        text: "When a new version of the app is ready, Windows can show you a notification. You can change this any time at the bottom of the app.",
-        yes: "Allow",
-        no: "Not now"
-      });
-      await save("notifyUpdates", notifyPref);
-      showNotifPref();
-      checkUpdates();
-    }, 1500);
-  } else {
-    checkUpdates();
-  }
+  checkUpdates();
   setInterval(checkUpdates, 30 * 60 * 1000);
 }
 

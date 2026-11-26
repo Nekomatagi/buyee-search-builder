@@ -20,7 +20,14 @@ body { margin: 0; background: var(--bg); color: var(--ink); transition: backgrou
   font: 15px/1.5 "Yu Gothic UI", "Meiryo UI", "Segoe UI", system-ui, sans-serif; }
 .wrap { max-width: 640px; margin: 0 auto; padding: 12px 20px 28px; }
 .topbar { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; }
-.tools { display: flex; gap: 6px; }
+.tools { display: flex; gap: 6px; align-items: center; }
+.rect-toggle { display: inline-flex; align-items: center; gap: 7px; height: 32px; padding: 0 10px; border: 1px solid var(--line);
+  border-radius: 8px; background: transparent; color: var(--ink); font-size: 12px; font-weight: 600; white-space: nowrap; }
+.rect-toggle .knob { position: relative; width: 24px; height: 14px; border-radius: 999px; background: var(--line); transition: background .15s; flex: none; }
+.rect-toggle .knob::after { content: ""; position: absolute; top: 2px; left: 2px; width: 10px; height: 10px; border-radius: 50%; background: var(--mute); transition: left .15s; }
+.rect-toggle.on { border-color: #22c55e; }
+.rect-toggle.on .knob { background: #22c55e; }
+.rect-toggle.on .knob::after { left: 12px; background: #fff; }
 .flags { display: flex; gap: 6px; align-items: center; }
 .home-pick { position: relative; }
 .flag-btn { display: flex; align-items: center; gap: 3px; padding: 3px; border: 0; border-radius: 6px; background: transparent; color: var(--ink); }
@@ -114,7 +121,6 @@ button { font: inherit; cursor: pointer; }
   .prices { grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr); }
   .prices .lbl { grid-column: 1 / -1; }
 }
-.ver-link { font-size: 11px; color: var(--mute); padding: 0 2px; min-height: 0; }
 .dialog { position: fixed; inset: 0; z-index: 50; display: grid; place-items: center; padding: 20px; background: rgba(0,0,0,.45); }
 .dialog[hidden] { display: none; }
 .dlg-card { width: min(380px, 100%); background: var(--bg); color: var(--ink); border: 1px solid var(--line); border-radius: 16px; padding: 20px; box-shadow: 0 20px 50px rgba(0,0,0,.4); }

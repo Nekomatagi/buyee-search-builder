@@ -163,3 +163,15 @@ test("ASEAN picker lists all 11 members with unique 3-letter codes", async () =>
   assert.equal(f.findCountry("nope").code, "THA");
   assert.match(f.flagSvg(f.JAPAN), /^<svg class="flag"/);
 });
+
+test("start-with-Windows registry commands", () => {
+  const exe = c.exePathFrom("C:/Users/Me/Desktop/BuyeeSearch/", "C:\\Users\\Me\\Desktop\\BuyeeSearch\\BuyeeSearch.exe");
+  assert.equal(exe, "C:\\Users\\Me\\Desktop\\BuyeeSearch\\BuyeeSearch.exe");
+  assert.equal(c.exePathFrom("D:\\Tools", "Buyee 2.exe"), "D:\\Tools\\Buyee 2.exe");
+  assert.equal(c.runValue(exe), '"C:\\Users\\Me\\Desktop\\BuyeeSearch\\BuyeeSearch.exe" --path="C:\\Users\\Me\\Desktop\\BuyeeSearch"');
+  assert.equal(c.regAddCommand(exe), 'reg add "HKCU\\Software\\Microsoft\\Windows\\CurrentVersion\\Run" /v BuyeeSearchBuilder /t REG_SZ /d "\\"C:\\Users\\Me\\Desktop\\BuyeeSearch\\BuyeeSearch.exe\\" --path=\\"C:\\Users\\Me\\Desktop\\BuyeeSearch\\"" /f');
+  assert.match(c.regDeleteCommand(), /^reg delete ".+\\Run" \/v BuyeeSearchBuilder \/f$/);
+  const out = '\r\nHKEY_CURRENT_USER\\Software\\Microsoft\\Windows\\CurrentVersion\\Run\r\n    BuyeeSearchBuilder    REG_SZ    "C:\\Users\\Me\\Desktop\\BuyeeSearch\\BuyeeSearch.exe" --path="C:\\Users\\Me\\Desktop\\BuyeeSearch"\r\n\r\n';
+  assert.equal(c.parseRegQuery(out), exe);
+  assert.equal(c.parseRegQuery("ERROR: The system was unable to find the specified registry key or value."), null);
+});

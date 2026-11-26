@@ -83,6 +83,41 @@ export function thbToJpy(thb, thbPerJpy) {
   return Math.round(v / r);
 }
 
+// ---- Start with Windows (per-user, no admin): HKCU\...\Run registry value
+export const RUN_KEY = "HKCU\\Software\\Microsoft\\Windows\\CurrentVersion\\Run";
+export const RUN_NAME = "BuyeeSearchBuilder";
+
+// NL_PATH (app folder, may use "/") + the exe's file name from NL_ARGS[0].
+export function exePathFrom(nlPath, arg0) {
+  const dir = String(nlPath || "").replace(/\//g, "\\").replace(/\\+$/, "");
+  const name = String(arg0 || "BuyeeSearch.exe").split(/[\\/]/).pop().replace(/^"|"$/g, "") || "BuyeeSearch.exe";
+  return `${dir}\\${name}`;
+}
+
+// Windows starts sign-in programs from System32, so pass the app folder with
+// --path, or Neutralino can't find resources.neu and .storage.
+export function runValue(exePath) {
+  const dir = exePath.replace(/\\[^\\]*$/, "");
+  return `"${exePath}" --path="${dir}"`;
+}
+export function regAddCommand(exePath) {
+  return `reg add "${RUN_KEY}" /v ${RUN_NAME} /t REG_SZ /d "${runValue(exePath).replace(/"/g, '\\"')}" /f`;
+}
+export function regDeleteCommand() {
+  return `reg delete "${RUN_KEY}" /v ${RUN_NAME} /f`;
+}
+export function regQueryCommand() {
+  return `reg query "${RUN_KEY}" /v ${RUN_NAME}`;
+}
+// Reads the registered exe path (first quoted part) out of `reg query` output, or null.
+export function parseRegQuery(stdOut) {
+  const m = String(stdOut || "").match(new RegExp(`${RUN_NAME}\\s+REG_SZ\\s+(.+)`));
+  if (!m) return null;
+  const v = m[1].trim();
+  const q = v.match(/^"([^"]+)"/);
+  return q ? q[1] : v.split(/\s+--/)[0];
+}
+
 export const THEMES = ["dark", "paper", "red"];
 export function nextTheme(current) {
   const i = THEMES.indexOf(current);
