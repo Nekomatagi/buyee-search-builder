@@ -48,12 +48,43 @@ export const DEEPL_CONTEXT =
   "Search keywords for a Japanese second-hand marketplace such as Yahoo! Auctions or Mercari. " +
   "Use the short product names and condition words Japanese sellers write in listing titles.";
 
-export function deeplBody(text) {
-  return JSON.stringify({
+// Instructions, the way you'd brief a person ("I'm sourcing second-hand goods").
+// DeepL allows up to 10, each up to 300 characters.
+export const DEEPL_INSTRUCTIONS = [
+  "I am sourcing second-hand goods in Japan. Translate the text into the search keywords Japanese sellers write in Yahoo! Auctions and Mercari listing titles, not into a sentence.",
+  "Prefer the short everyday forms sellers use, for example デジカメ for digital camera, 投げ竿 for surf fishing rod, 投げ釣り リール for surf fishing reel.",
+  "Write brand and model names in the katakana Japanese sellers use (シマノ, ダイワ, セイコー, オシアコンクエスト). Keep model numbers and letters like SP, LL, 3DS as they are.",
+  "Separate keywords with a single space. Do not add particles such as の or 用, brackets, or punctuation."
+];
+
+export const MAX_INSTRUCTIONS = 10;
+export const MAX_INSTRUCTION_LENGTH = 300;
+
+export function deeplBody(text, { instructions = true } = {}) {
+  const body = {
     text: [String(text)],
+    source_lang: "EN",
     target_lang: "JA",
     context: DEEPL_CONTEXT
-  });
+  };
+  if (instructions) body.custom_instructions = DEEPL_INSTRUCTIONS;
+  return JSON.stringify(body);
+}
+
+// Turn a translated phrase into space-separated search words:
+// "セイコーの自動巻き腕時計（ジャンク品）" -> "セイコー 自動巻き腕時計 ジャンク品"
+const WORD = "[\\u30a0-\\u30ff\\u3400-\\u9fffA-Za-z0-9ー]";
+export function searchClean(text) {
+  return String(text || "")
+    .replace(/[（）()「」『』【】［］\[\]、。・,.!?！？:：;；"“”]/g, " ")
+    .replace(new RegExp(`(${WORD})[のと用](?=${WORD})`, "gu"), "$1 ")
+    .replace(/\s+/g, " ")
+    .trim();
+}
+
+// DeepL returns the input unchanged when it can't translate (e.g. unknown brand names).
+export function isUntranslated(source, result) {
+  return !hasJapanese(result);
 }
 
 // Command line for Windows' built-in curl.exe. The body goes in a UTF-8 file so
@@ -83,12 +114,15 @@ export function parseCurlOutput(stdOut) {
     return { text: t.text.trim(), detected: t.detected_source_language || "" };
   }
   const reasons = {
+    400: "DeepL didn't accept the request.",
     403: "DeepL rejected the API key.",
     429: "Too many requests to DeepL. Wait a moment and try again.",
     456: "Your DeepL monthly character allowance is used up.",
     0: "Could not reach DeepL. Check the internet connection."
   };
-  throw new Error(reasons[status] || `DeepL error (HTTP ${status || "none"}).`);
+  const err = new Error(reasons[status] || `DeepL error (HTTP ${status || "none"}).`);
+  err.status = status;
+  throw err;
 }
 
 // Clean DeepL output for search use: drop trailing sentence punctuation.

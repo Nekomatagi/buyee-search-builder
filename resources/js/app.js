@@ -1,5 +1,5 @@
 import {
-  hasJapanese, buildQuery, buyeeUrl, lookupWord, rememberWord,
+  hasJapanese, isUntranslated, buildQuery, buyeeUrl, lookupWord, rememberWord,
   addItem, removeItem, seedWords
 } from "./core.js";
 import { romaji, initRomaji } from "./romaji.js";
@@ -28,6 +28,10 @@ async function toJapanese(text) {
   if (cached) return { ja: cached, source: "Saved word" };
   if (!hasDeepLKey()) throw new Error(isDesktop ? "This build has no DeepL key." : "Translation works in the desktop app.");
   const ja = await translateWithDeepL(t);
+  if (isUntranslated(t, ja)) {
+    // Not saved: next time DeepL gets another chance, or you type the Japanese.
+    return { ja, source: "DeepL kept it in English. Type the Japanese if you know it.", warn: true };
+  }
   state.words = rememberWord(state.words, t, ja);
   save("words", state.words);
   return { ja, source: "DeepL" };
@@ -42,9 +46,10 @@ function liveTranslator({ input, output, srcEl, romajiEl, onChange }) {
     if (!text.trim()) { output.value = ""; srcEl.textContent = ""; await showRomaji(); return onChange(); }
     srcEl.className = "src"; srcEl.textContent = "Translating…";
     try {
-      const { ja, source } = await toJapanese(text);
+      const { ja, source, warn } = await toJapanese(text);
       if (mine !== seq) return;
       output.value = ja;
+      srcEl.className = warn ? "src err" : "src";
       srcEl.textContent = source;
     } catch (e) {
       if (mine !== seq) return;
@@ -127,7 +132,10 @@ function flash(text) {
 async function main() {
   await initPlatform();
   state.defaults = await (await fetch("data/defaults.json")).json();
-  state.words = { ...seedWords(state.defaults), ...(await load("words", {})) };
+  // Drop saved "translations" that are still English (saved by v0.1.0).
+  const saved = Object.fromEntries(Object.entries(await load("words", {})).filter(([, ja]) => hasJapanese(ja)));
+  state.words = { ...seedWords(state.defaults), ...saved };
+  save("words", saved);
   state.presets = await load("presets", state.defaults.presets);
   state.filters = await load("filters", []);
 
