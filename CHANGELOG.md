@@ -1,5 +1,15 @@
 # Changelog
 
+## 0.4.0 — 2026-11-26
+
+Updates you notice, and your search kept.
+
+- When an update is ready, the globe turns into a green up-arrow. Click it: the app asks "Update to version …?" and, if you agree, restarts on the new version. The old top banner is gone.
+- Windows notifications for new versions, only after you allow them. The app asks once ("Get update notifications?"); you can switch them on or off any time at the bottom of the app.
+- The app checks for updates on start and every 30 minutes. Clicking the globe checks right away.
+- Your last search (English, Japanese, condition, format, filter) comes back when you reopen the app, including after an update.
+- Dialogs are built into the app (no browser pop-ups).
+
 ## 0.3.2 — 2026-11-26
 
 - Click the home flag (top-right) to pick any of the 11 ASEAN member countries, shown with flag and 3-letter code (THA, BRN, KHM, IDN, LAO, MYS, MMR, PHL, SGP, TLS, VNM). For now it only changes the flag; the rest of the app is the same. Your choice is remembered.

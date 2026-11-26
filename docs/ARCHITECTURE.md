@@ -92,12 +92,16 @@ Neutralino storage, kept in `.storage/` next to the exe (portable).
 | `theme` | `dark`, `paper` or `red` |
 | `pinned` | keep-on-top on/off |
 | `homeCountry` | 3-letter code of the home flag, e.g. `THA` |
+| `session` | last search: `{ en, ja, edited, src, cond, fmt, ext }` |
+| `notifyUpdates` | `true`/`false`; missing = not asked yet |
+| `notifiedVersion` | last version a notification was shown for |
 
 ## Updates
 
 1. On start, the app fetches `NL_UPDATE_URL` (`https://<owner>.github.io/<repo>/update.json`).
-2. If its `version` is newer than the running version, the green banner appears.
-3. **Update now** downloads `resources.neu` from the same site, replaces the local one, and restarts.
+2. It checks again every 30 minutes, and when the globe is clicked.
+3. If `update.json` has a newer `version`, the globe turns into an up-arrow and, if the user allowed it, a Windows notification is shown once per version (`Neutralino.os.showNotification`).
+4. Clicking the arrow asks for confirmation, saves the current search, downloads `resources.neu` from the same site, replaces the local one, and restarts.
 
 Only `resources.neu` is updated. The exe itself changes only when the Neutralino version changes, which needs a fresh download from Releases. GitHub Pages is used because Neutralino's updater runs `fetch` inside the page, which needs CORS headers; GitHub Pages provides them, and release-asset downloads don't.
 
