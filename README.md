@@ -1,49 +1,45 @@
 # Buyee Search Builder
 
-A small Windows app (about 20 MB, no install) that turns a product idea into a Japanese search query for [Buyee](https://buyee.jp).
+A small Windows app that turns a product idea into the Japanese search that finds it on [Buyee](https://buyee.jp), with Buyee's filters already set.
 
-- Type in English → Japanese appears with **romaji** underneath (DeepL translation, offline romaji).
-- Pick condition, format and filter from dropdowns; add your own presets and filters.
-- Copy the query or open the search on Buyee directly.
-- Updates itself: when a new version is released, the app shows **Update now**.
+Type **"surf fishing reel"**, get **投げ釣り リール** (*nagezuri rīru*), add 中古 and まとめ売り from the dropdowns, tick *Free delivery within Japan*, and open the search on Buyee in one click.
 
-## Download and run
+- **English → seller Japanese.** DeepL is briefed like a sourcer ("give the keywords sellers use in listing titles"), so you get デジカメ, not デジタルカメラ.
+- **Romaji under every Japanese line**, generated offline.
+- **Your own presets and filters**, saved next to the app.
+- **Buyee's own filters**: item condition, options, and price range in ¥ or ฿.
+- **Portable and self-updating**: no install, and an *Update now* banner appears when a new version is released.
 
-1. Open the latest release on this repository's **Releases** page and download `BuyeeSearch-win-x64.zip`.
-2. Unzip anywhere (desktop, USB stick). Keep `BuyeeSearch.exe` and `resources.neu` together.
-3. Double-click `BuyeeSearch.exe`. The first time, Windows may show *Windows protected your PC*: click **More info → Run anyway**.
+## Download
 
-Your presets, filters and saved words live in the `.storage` folder next to the app. Copy the folder to take everything to another PC.
+1. Go to [**Releases**](../../releases/latest) and download `BuyeeSearch-win-x64.zip`.
+2. Unzip it anywhere (desktop, USB stick). Keep `BuyeeSearch.exe` and `resources.neu` together.
+3. Double-click `BuyeeSearch.exe`.
 
-## One-time repository setup
+The first time, Windows may show *Windows protected your PC*. Click **More info → Run anyway**. This happens because the app isn't code-signed.
 
-1. **Settings → Secrets and variables → Actions → New repository secret**: name `DEEPL_API_KEY`, value = your DeepL API key.
-2. **Settings → Pages → Build and deployment → Source: GitHub Actions** (this hosts the update feed).
-3. The repository must be **public** for the free update feed. Note: the DeepL key is built into the app, so anyone who downloads it can extract the key. Fine for a proof of concept; regenerate the key in DeepL if it's ever abused.
+**Requirements:** Windows 10 or 11 (64-bit) with Microsoft Edge WebView2, which both include by default, and an internet connection for translation and Buyee.
 
-## How releases work
+## Documentation
 
-- Every push to `main` runs the tests.
-- When `version` in `package.json` is higher than the last release, GitHub Actions also builds the app, checks the DeepL key, publishes a Release with the zip, and updates the feed the app checks for updates.
-
-## How it's built
-
-| Part | What |
+| Guide | For |
 |---|---|
-| Window | [Neutralinojs](https://neutralino.js.org) 6.10 using Microsoft Edge WebView2 (built into Windows 10/11) |
-| Translation | DeepL API, called through Windows' built-in `curl.exe` (WebView2 blocks direct calls to DeepL) |
-| Romaji | [kuroshiro](https://github.com/hexenq/kuroshiro) + kuromoji dictionary, fully offline |
-| Storage | Neutralino storage (`.storage` folder next to the .exe) |
-| Updates | Neutralino updater reading `update.json` from GitHub Pages |
+| [User guide](docs/USER_GUIDE.md) | Every part of the screen, tips, and troubleshooting |
+| [Architecture](docs/ARCHITECTURE.md) | How the app works inside: translation pipeline, Buyee filters, storage, updates |
+| [Development](docs/DEVELOPMENT.md) | Running, testing, changing and releasing the app |
+| [Changelog](CHANGELOG.md) | What changed in each version |
 
-```
-resources/        the app (HTML, CSS, JS, romaji dictionary, default lists)
-  js/core.js      pure logic, unit-tested
-  js/platform.js  everything that touches Windows/Neutralino
-  js/app.js       screen behaviour
-  data/defaults.json  presets, conditions, formats, filters
-scripts/          build helpers (adds key/version, packages release + update feed)
-test/             unit tests (npm test)
-```
+## At a glance
 
-Develop in a browser: `npm run dev`, then open http://localhost:8765 (translation needs the desktop app).
+| | |
+|---|---|
+| App shell | [Neutralinojs](https://neutralino.js.org) 6.10 on Microsoft Edge WebView2 |
+| Translation | [DeepL API](https://developers.deepl.com) with custom instructions |
+| Romaji | [kuroshiro](https://github.com/hexenq/kuroshiro) + kuromoji dictionary (offline) |
+| Exchange rate | [open.er-api.com](https://www.exchangerate-api.com/docs/free) (free, daily) |
+| Releases | GitHub Actions → GitHub Releases + GitHub Pages update feed |
+| Size | about 20 MB (18 MB is the offline romaji dictionary) |
+
+## Status
+
+Personal proof of concept. The DeepL key is built into the released app, so anyone who downloads it can extract the key. See [Architecture → Security](docs/ARCHITECTURE.md#security).

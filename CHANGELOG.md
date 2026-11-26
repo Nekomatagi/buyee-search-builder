@@ -1,5 +1,15 @@
 # Changelog
 
+## 0.3.0 — 2026-11-26
+
+Buyee's own filters, themes and an internet indicator.
+
+- New section 5, "Buyee filters", matching buyee.jp: item condition (Unused item … Overall poor condition), options (Newly posted, Free delivery within Japan, With pictures, Buyee recommended, Ending within 1 hour, Official authentication, Buy It Now items only) and price range (current and buyout price). They are sent to Buyee in the search address, exactly as buyee.jp does it, and remembered between sessions.
+- Prices can be entered in yen or baht; baht are converted to yen with a daily exchange rate (open.er-api.com).
+- "Open on Buyee" moved to the bottom of the page and shows how many filters are on.
+- Top-left: theme button (dark → paper white → red; the dot shows the next theme's colour) and a globe that turns green when online, red when offline.
+- Translation test: "セイコー 自動巻き ジャンク" accepted for "seiko automatic watch junk".
+
 ## 0.2.0 — 2026-11-26
 
 Better translations for sourcing.

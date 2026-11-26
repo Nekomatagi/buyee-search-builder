@@ -1,6 +1,6 @@
 {
   "name": "buyee-search-builder",
-  "version": "0.2.0",
+  "version": "0.3.0",
   "private": true,
   "description": "Small Windows app that builds Japanese search queries for Buyee, with DeepL translation and offline romaji.",
   "type": "module",

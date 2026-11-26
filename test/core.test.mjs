@@ -25,7 +25,33 @@ test("buildQuery skips blanks and duplicates", () => {
 });
 
 test("buyeeUrl encodes the query", () => {
-  assert.equal(c.buyeeUrl("デジカメ ジャンク"), "https://buyee.jp/item/search/query/%E3%83%87%E3%82%B8%E3%82%AB%E3%83%A1%20%E3%82%B8%E3%83%A3%E3%83%B3%E3%82%AF");
+  assert.equal(c.buyeeUrl("デジカメ ジャンク"), "https://buyee.jp/item/search/query/%E3%83%87%E3%82%B8%E3%82%AB%E3%83%A1%20%E3%82%B8%E3%83%A3%E3%83%B3%E3%82%AF?translationType=98");
+});
+
+test("buyeeUrl adds Buyee filters the way buyee.jp does", () => {
+  const u = new URL(c.buyeeUrl("デジカメ", {
+    conditions: ["1", "3", "bogus"],
+    options: ["new", "freeshipping", "buynow", "hack"],
+    prices: { currentMin: 1111, currentMax: "2222", buyoutMin: 0, buyoutMax: 4444.4 }
+  }));
+  const q = Object.fromEntries(u.searchParams);
+  assert.deepEqual(q, {
+    aucminprice: "1111", aucmaxprice: "2222", aucmax_bidorbuy_price: "4444",
+    new: "1", freeshipping: "1", buynow: "1", item_status: "1,3", translationType: "98"
+  });
+});
+
+test("thbToJpy converts with baht-per-yen rate", () => {
+  assert.equal(c.thbToJpy(213, 0.213), 1000);
+  assert.equal(c.thbToJpy("", 0.2), null);
+  assert.equal(c.thbToJpy(100, 0), null);
+});
+
+test("nextTheme cycles dark -> paper -> red", () => {
+  assert.equal(c.nextTheme("dark"), "paper");
+  assert.equal(c.nextTheme("paper"), "red");
+  assert.equal(c.nextTheme("red"), "dark");
+  assert.equal(c.nextTheme("weird"), "dark");
 });
 
 test("deeplEndpoint picks free vs pro host", () => {

@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" data-theme="dark">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
@@ -13,6 +13,19 @@
 </div>
 
 <main class="wrap">
+  <div class="topbar">
+    <button id="themeBtn" class="icon-btn" type="button" title="Theme" aria-label="Change theme">
+      <span class="swatch"></span>
+    </button>
+    <span id="net" class="icon-btn net" role="img" aria-label="Checking internet" title="Checking internet…">
+      <svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true">
+        <circle cx="12" cy="12" r="9" fill="none" stroke="currentColor" stroke-width="1.8"/>
+        <path d="M3 12h18M12 3c2.6 2.7 3.9 5.7 3.9 9s-1.3 6.3-3.9 9c-2.6-2.7-3.9-5.7-3.9-9S9.4 5.7 12 3z" fill="none" stroke="currentColor" stroke-width="1.8"/>
+      </svg>
+      <i class="dot"></i>
+    </span>
+  </div>
+
   <p class="kick">Japanese second-hand sourcing tool</p>
   <h1>Buyee search builder</h1>
 
@@ -64,15 +77,48 @@
     <div class="out-head"><b>Your Japanese search query</b><span class="tag">Generated</span></div>
     <p id="q" class="q" lang="ja"></p>
     <p id="qRomaji" class="romaji q-romaji"></p>
-    <div class="btns">
-      <button id="copy" class="pri" type="button">Copy Japanese query</button>
-      <button id="open" type="button">Open on Buyee</button>
-    </div>
+    <button id="copy" class="pri wide" type="button">Copy Japanese query</button>
     <div class="foot">
       <p id="msg" class="hint">Paste into Buyee's search bar.</p>
       <button id="reset" class="link" type="button">Reset</button>
     </div>
   </section>
+
+  <section>
+    <div class="row-head h2-row">
+      <h2>5. Buyee filters</h2>
+      <button id="clearBuyee" class="link" type="button">Clear</button>
+    </div>
+    <p class="hint">Applied when you open the search on Buyee. They're Buyee settings, so they aren't part of the copied text.</p>
+    <span class="lbl sub">Item condition</span>
+    <div id="bConditions" class="chips"></div>
+    <span class="lbl sub">Options</span>
+    <div id="bOptions" class="chips"></div>
+    <div class="row-head">
+      <span class="lbl sub">Price range</span>
+      <select id="currency" class="mini" aria-label="Currency">
+        <option value="JPY">¥ JPY</option>
+        <option value="THB">฿ THB</option>
+      </select>
+    </div>
+    <div class="prices">
+      <span class="lbl">Current price</span>
+      <input id="curMin" type="number" min="0" inputmode="numeric" placeholder="Min">
+      <span class="tilde">~</span>
+      <input id="curMax" type="number" min="0" inputmode="numeric" placeholder="Max">
+      <span class="lbl">Buyout price</span>
+      <input id="buyMin" type="number" min="0" inputmode="numeric" placeholder="Min">
+      <span class="tilde">~</span>
+      <input id="buyMax" type="number" min="0" inputmode="numeric" placeholder="Max">
+    </div>
+    <p id="rateNote" class="hint"></p>
+  </section>
+
+  <button id="open" class="buyee-btn" type="button">
+    <svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true"><path d="M14 4h6v6M20 4l-9 9M18 14v5a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V7a1 1 0 0 1 1-1h5" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+    <span>Open on Buyee</span>
+    <small id="filterCount"></small>
+  </button>
 
   <p id="ver" class="ver"></p>
 </main>

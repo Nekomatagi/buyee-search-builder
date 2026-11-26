@@ -32,8 +32,61 @@ export function buildQuery(parts) {
   return out.join(" ");
 }
 
-export function buyeeUrl(query) {
-  return BUYEE_SEARCH + encodeURIComponent(query);
+// Buyee's own search filters (read from buyee.jp's search page, Nov 2026).
+// They travel in the search address, not in the typed query.
+export const BUYEE_CONDITIONS = [
+  { id: "1", en: "Unused item" },
+  { id: "3", en: "Close to unused" },
+  { id: "4", en: "No noticeable scratches or stains" },
+  { id: "5", en: "Slight scratches or stains" },
+  { id: "6", en: "Visible scratches or stains" },
+  { id: "7", en: "Overall poor condition" }
+];
+
+export const BUYEE_OPTIONS = [
+  { param: "new", en: "Newly posted" },
+  { param: "freeshipping", en: "Free delivery within Japan" },
+  { param: "thumbnail", en: "With pictures" },
+  { param: "goodSellers", en: "Buyee recommended" },
+  { param: "one_hour_to_finish", en: "Ending within 1 hour" },
+  { param: "isAppraisal", en: "Official authentication" },
+  { param: "buynow", en: "Buy It Now items only" }
+];
+
+const PRICE_PARAMS = {
+  currentMin: "aucminprice",
+  currentMax: "aucmaxprice",
+  buyoutMin: "aucmin_bidorbuy_price",
+  buyoutMax: "aucmax_bidorbuy_price"
+};
+
+// filters = { conditions: ["1","3"], options: ["new"], prices: { currentMin: 1000 } } (prices in yen)
+export function buyeeUrl(query, filters = {}) {
+  const p = new URLSearchParams();
+  const prices = filters.prices || {};
+  for (const [k, param] of Object.entries(PRICE_PARAMS)) {
+    const v = Math.round(Number(prices[k]));
+    if (Number.isFinite(v) && v > 0) p.set(param, String(v));
+  }
+  const allowed = new Set(BUYEE_OPTIONS.map((o) => o.param));
+  for (const o of filters.options || []) if (allowed.has(o)) p.set(o, "1");
+  const conds = (filters.conditions || []).filter((c) => BUYEE_CONDITIONS.some((x) => x.id === c));
+  if (conds.length) p.set("item_status", conds.join(","));
+  p.set("translationType", "98"); // search the Japanese as typed, no auto-translate
+  return BUYEE_SEARCH + encodeURIComponent(query) + "?" + p.toString();
+}
+
+// Baht -> yen with a rate expressed as baht per 1 yen.
+export function thbToJpy(thb, thbPerJpy) {
+  const v = Number(thb), r = Number(thbPerJpy);
+  if (!(v > 0) || !(r > 0)) return null;
+  return Math.round(v / r);
+}
+
+export const THEMES = ["dark", "paper", "red"];
+export function nextTheme(current) {
+  const i = THEMES.indexOf(current);
+  return THEMES[(i + 1) % THEMES.length];
 }
 
 // DeepL free keys end in ":fx" and use a different host.
