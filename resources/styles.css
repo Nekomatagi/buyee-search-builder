@@ -39,6 +39,12 @@ body { margin: 0; background: var(--bg); color: var(--ink); transition: backgrou
 button.icon-btn { cursor: pointer; }
 .swatch { width: 18px; height: 18px; border-radius: 50%; background: var(--swatch); }
 #themeBtn { border: 0; }
+.net { cursor: pointer; }
+.net .arrow { display: none; }
+.net.update { background: #16a34a; border-color: #16a34a; color: #fff; }
+.net.update .globe, .net.update .dot { display: none; }
+.net.update .arrow { display: block; animation: nudge 1.6s ease-in-out infinite; }
+@keyframes nudge { 0%, 100% { transform: translateY(1px); } 50% { transform: translateY(-2px); } }
 .net .dot { position: absolute; right: 2px; bottom: 2px; width: 9px; height: 9px; border-radius: 50%;
   background: var(--mute); border: 2px solid var(--bg); }
 .net.on .dot { background: #22c55e; }
@@ -103,12 +109,16 @@ button { font: inherit; cursor: pointer; }
 .buyee-btn svg { flex: none; display: block; align-self: center; }
 .buyee-btn small { font-size: 14px; font-weight: 400; color: #ffffff; opacity: .9; }
 .ver { font-size: 11px; color: var(--mute); text-align: center; margin: 18px 0 0; }
-.update { display: flex; justify-content: center; gap: 12px; align-items: center; padding: 8px; background: #16a34a; color: #fff; font-size: 13px; }
-.update[hidden] { display: none; }
-.update button { background: #fff; color: #111; border: 0; border-radius: 999px; padding: 4px 12px; font-weight: 700; }
 @media (max-width: 420px) {
   .presets { grid-template-columns: minmax(0, 1fr); }
   .prices { grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr); }
   .prices .lbl { grid-column: 1 / -1; }
 }
-@media (prefers-reduced-motion: reduce) { body { transition: none; } }
+.ver-link { font-size: 11px; color: var(--mute); padding: 0 2px; min-height: 0; }
+.dialog { position: fixed; inset: 0; z-index: 50; display: grid; place-items: center; padding: 20px; background: rgba(0,0,0,.45); }
+.dialog[hidden] { display: none; }
+.dlg-card { width: min(380px, 100%); background: var(--bg); color: var(--ink); border: 1px solid var(--line); border-radius: 16px; padding: 20px; box-shadow: 0 20px 50px rgba(0,0,0,.4); }
+.dlg-card h3 { margin: 0 0 6px; font-size: 17px; }
+.dlg-card p { margin: 0 0 16px; color: var(--mute); font-size: 14px; }
+.dlg-btns { display: flex; justify-content: flex-end; gap: 10px; align-items: center; }
+@media (prefers-reduced-motion: reduce) { body { transition: none; } .net.update .arrow { animation: none; } }

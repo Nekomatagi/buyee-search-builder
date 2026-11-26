@@ -76,6 +76,13 @@ export async function translateWithDeepL(text) {
   return searchClean(cleanTranslation(ja));
 }
 
+// ---- Windows notification (only called after the user allowed it in the app)
+export async function notify(title, body) {
+  if (!isDesktop) return false;
+  await Neutralino.os.showNotification(title, body, "INFO");
+  return true;
+}
+
 // ---- window
 export async function setAlwaysOnTop(on) {
   if (isDesktop) await Neutralino.window.setAlwaysOnTop(Boolean(on));

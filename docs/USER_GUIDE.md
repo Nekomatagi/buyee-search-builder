@@ -7,7 +7,7 @@ The screen runs top to bottom in the order you build a search: product, then con
 | Icon | What it does |
 |---|---|
 | Coloured dot | Switches theme: **Dark → Paper white → Red**. The dot shows the colour of the *next* theme. Your choice is remembered. |
-| Globe | **Green dot:** online. **Red dot:** offline, so translation, the exchange rate and Buyee won't work. Checked every 30 seconds. |
+| Globe | **Green dot:** online. **Red dot:** offline, so translation, the exchange rate and Buyee won't work. Checked every 30 seconds. **Green up-arrow:** an update is ready; click it to restart on the new version. Clicking the globe otherwise checks for updates now. |
 | Pin | **Keep on top:** the window stays above other windows (handy next to your browser). Click again to turn off. Remembered. |
 
 The flags top-right show your home country and Japan. Click the home flag to choose any ASEAN member country; for now this only changes the flag.
@@ -71,7 +71,14 @@ Presets, custom filters, saved words, Buyee filters and theme are stored in the 
 
 ## Updates
 
-When a new version is released, a green banner appears at the top: **Update now**. Click it; the app downloads the update and restarts. Your data is kept.
+- The app checks for a new version when it starts and every 30 minutes.
+- When one is ready, the globe turns into a **green up-arrow**. Click it, choose **Restart and update**, and the app restarts on the new version.
+- **Notifications:** the first time you open version 0.4.0 or later, the app asks whether it may show a Windows notification when an update is ready. Change this any time with **Update notifications: on/off** at the bottom of the app.
+- Your presets, filters, saved words and **your last search** are kept.
+
+## Your last search
+
+Whatever you were searching for (English, Japanese, condition, format and filter) is restored when you open the app again.
 
 ## Troubleshooting
 

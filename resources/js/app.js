@@ -6,7 +6,7 @@ import { romaji, initRomaji } from "./romaji.js";
 import { ASEAN, JAPAN, flagSvg, findCountry } from "./flags.js";
 import {
   isDesktop, initPlatform, appVersion, load, save, translateWithDeepL,
-  hasDeepLKey, copyText, openUrl, checkForUpdate, installUpdate, setAlwaysOnTop
+  hasDeepLKey, copyText, openUrl, checkForUpdate, installUpdate, setAlwaysOnTop, notify
 } from "./platform.js";
 
 const $ = (id) => document.getElementById(id);
@@ -122,6 +122,7 @@ async function renderQuery() {
   $("q").textContent = q || "…";
   $("qRomaji").textContent = q ? await romaji(q) : "";
   document.querySelectorAll("#presets .chip").forEach((c) => c.classList.toggle("on", c.dataset.ja === $("ja").value.trim()));
+  saveSession();
   return q;
 }
 
@@ -135,9 +136,20 @@ function applyTheme(t) {
   return theme;
 }
 
-// ---------- internet indicator
-async function checkNet() {
+// ---------- internet indicator + update arrow
+const net = { online: true, update: null };
+function renderNet() {
   const el = $("net");
+  const showUpdate = net.online && net.update;
+  el.classList.toggle("on", net.online && !showUpdate);
+  el.classList.toggle("off", !net.online);
+  el.classList.toggle("update", Boolean(showUpdate));
+  el.title = showUpdate
+    ? `Version ${net.update.version} is ready. Click to restart and update.`
+    : net.online ? "Online. Click to check for updates." : "Offline: translation and Buyee won't work";
+  el.setAttribute("aria-label", el.title);
+}
+async function checkNet() {
   let on = navigator.onLine;
   if (on) {
     const ctrl = new AbortController();
@@ -146,11 +158,40 @@ async function checkNet() {
     catch { on = false; }
     clearTimeout(t);
   }
-  el.classList.toggle("on", on);
-  el.classList.toggle("off", !on);
-  el.title = on ? "Online" : "Offline: translation and Buyee won't work";
-  el.setAttribute("aria-label", el.title);
+  net.online = on;
+  renderNet();
   return on;
+}
+
+// ---------- in-app dialog (no browser pop-ups)
+function ask({ title, text, yes, no }) {
+  return new Promise((resolve) => {
+    const d = $("dialog");
+    $("dlgTitle").textContent = title;
+    $("dlgText").textContent = text;
+    $("dlgYes").textContent = yes;
+    $("dlgNo").textContent = no;
+    d.hidden = false;
+    $("dlgYes").focus();
+    const done = (v) => {
+      d.hidden = true;
+      $("dlgYes").onclick = $("dlgNo").onclick = d.onkeydown = null;
+      resolve(v);
+    };
+    $("dlgYes").onclick = () => done(true);
+    $("dlgNo").onclick = () => done(false);
+    d.onkeydown = (e) => { if (e.key === "Escape") done(false); };
+  });
+}
+
+// ---------- last search (restored on every start, incl. after an update)
+let sessionTimer = null;
+function saveSession() {
+  clearTimeout(sessionTimer);
+  sessionTimer = setTimeout(() => save("session", {
+    en: $("en").value, ja: $("ja").value, edited: $("ja").classList.contains("edited"),
+    src: $("src").textContent, cond: $("cond").value, fmt: $("fmt").value, ext: $("ext").value
+  }), 300);
 }
 
 // ---------- Buyee filters (sent in the Buyee address, not the copied text)
@@ -206,7 +247,18 @@ async function main() {
   fillSelect($("fmt"), state.defaults.formats);
   renderFilters();
   $("cond").value = "中古";
+  const lastExt = (await load("session", {}))?.ext;
+  if (lastExt) renderFilters(lastExt);
   $("ver").textContent = `Version ${appVersion()}`;
+
+  const last = await load("session", null);
+  if (last) {
+    $("en").value = last.en || "";
+    $("ja").value = last.ja || "";
+    $("ja").classList.toggle("edited", Boolean(last.edited));
+    $("src").textContent = last.ja ? (last.src || "Last session") : "";
+    for (const id of ["cond", "fmt"]) if ([...$(id).options].some((o) => o.value === last[id])) $(id).value = last[id];
+  }
 
   const product = liveTranslator({
     input: $("en"), output: $("ja"), srcEl: $("src"), romajiEl: $("jaRomaji"), onChange: renderQuery
@@ -399,16 +451,67 @@ async function main() {
     $("qRomaji").textContent = "Romaji unavailable.";
   });
 
-  const update = await checkForUpdate();
-  if (update) {
-    $("updateText").textContent = `Version ${update.version} is ready.`;
-    $("update").hidden = false;
-    $("updateBtn").addEventListener("click", async () => {
-      $("updateBtn").disabled = true;
-      $("updateText").textContent = "Updating…";
-      try { await installUpdate(); } catch { $("updateText").textContent = "Update failed. Try again later."; $("updateBtn").disabled = false; }
-    });
+  // ---- updates: arrow on the globe + Windows notification (with permission)
+  let notifyPref = await load("notifyUpdates", null); // null = not asked yet
+  const showNotifPref = () => {
+    $("notifToggle").textContent = `Update notifications: ${notifyPref ? "on" : "off"}`;
+  };
+  showNotifPref();
+  $("notifToggle").addEventListener("click", async () => {
+    notifyPref = !notifyPref;
+    await save("notifyUpdates", notifyPref);
+    showNotifPref();
+    flash(notifyPref ? "You'll get a Windows notification when an update is ready." : "Update notifications are off.");
+  });
+
+  async function checkUpdates({ manual = false } = {}) {
+    const m = await checkForUpdate();
+    net.update = m;
+    renderNet();
+    if (!m) { if (manual) flash("You're on the latest version."); return; }
+    if (notifyPref && (await load("notifiedVersion", "")) !== m.version) {
+      try {
+        await notify("Buyee Search Builder", `Version ${m.version} is ready. Click the arrow next to the theme dot to restart and update.`);
+        await save("notifiedVersion", m.version);
+      } catch { /* notifications unavailable: the arrow still shows */ }
+    }
   }
+
+  $("net").addEventListener("click", async () => {
+    if (!net.update) { await checkNet(); return checkUpdates({ manual: true }); }
+    const ok = await ask({
+      title: `Update to version ${net.update.version}?`,
+      text: "The app will restart. Your current search, presets and filters are kept.",
+      yes: "Restart and update",
+      no: "Later"
+    });
+    if (!ok) return;
+    clearTimeout(sessionTimer);
+    await save("session", {
+      en: $("en").value, ja: $("ja").value, edited: $("ja").classList.contains("edited"),
+      src: $("src").textContent, cond: $("cond").value, fmt: $("fmt").value, ext: $("ext").value
+    });
+    flash("Updating…");
+    try { await installUpdate(); } catch { flash("Update failed. Try again later."); }
+  });
+
+  // Ask once, politely, before sending any Windows notification.
+  if (notifyPref === null) {
+    setTimeout(async () => {
+      notifyPref = await ask({
+        title: "Get update notifications?",
+        text: "When a new version of the app is ready, Windows can show you a notification. You can change this any time at the bottom of the app.",
+        yes: "Allow",
+        no: "Not now"
+      });
+      await save("notifyUpdates", notifyPref);
+      showNotifPref();
+      checkUpdates();
+    }, 1500);
+  } else {
+    checkUpdates();
+  }
+  setInterval(checkUpdates, 30 * 60 * 1000);
 }
 
 main().catch((e) => {
