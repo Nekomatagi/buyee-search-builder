@@ -33,11 +33,38 @@ test("deeplEndpoint picks free vs pro host", () => {
   assert.match(c.deeplEndpoint("abc"), /\/\/api\.deepl/);
 });
 
-test("deeplBody targets Japanese with context", () => {
+test("deeplBody targets Japanese with context and instructions", () => {
   const b = JSON.parse(c.deeplBody("fishing reel"));
   assert.deepEqual(b.text, ["fishing reel"]);
   assert.equal(b.target_lang, "JA");
+  assert.equal(b.source_lang, "EN");
   assert.ok(b.context.length > 20);
+  assert.deepEqual(b.custom_instructions, c.DEEPL_INSTRUCTIONS);
+  assert.equal(JSON.parse(c.deeplBody("x", { instructions: false })).custom_instructions, undefined);
+});
+
+test("instructions stay within DeepL limits", () => {
+  assert.ok(c.DEEPL_INSTRUCTIONS.length <= c.MAX_INSTRUCTIONS);
+  for (const i of c.DEEPL_INSTRUCTIONS) assert.ok(i.length <= c.MAX_INSTRUCTION_LENGTH, i);
+});
+
+test("searchClean turns phrases into search words", () => {
+  assert.equal(c.searchClean("サーフフィッシング用リール"), "サーフフィッシング リール");
+  assert.equal(c.searchClean("セイコーの自動巻き腕時計（ジャンク品）"), "セイコー 自動巻き腕時計 ジャンク品");
+  assert.equal(c.searchClean("カセットプレーヤー。"), "カセットプレーヤー");
+  assert.equal(c.searchClean("本体のみ"), "本体のみ");
+  assert.equal(c.searchClean("まとめ売り"), "まとめ売り");
+  assert.equal(c.searchClean("ニンテンドー3DS LL"), "ニンテンドー3DS LL");
+});
+
+test("isUntranslated spots English left as-is", () => {
+  assert.equal(c.isUntranslated("shimano ocea conquest", "shimano ocea conquest"), true);
+  assert.equal(c.isUntranslated("shimano", "シマノ"), false);
+});
+
+test("parseCurlOutput keeps the HTTP status on errors", () => {
+  try { c.parseCurlOutput('{"message":"bad"}\n400'); assert.fail(); }
+  catch (e) { assert.equal(e.status, 400); }
 });
 
 test("curlCommand passes the body by file and quotes safely", () => {

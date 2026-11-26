@@ -1,0 +1,15 @@
+{
+  "_about": "Translation quality test. Each English input passes if DeepL's cleaned output matches one of the accepted answers (spaces ignored). Edit this list to change what 'good' means.",
+  "cases": [
+    { "en": "surf fishing reel", "accept": ["投げ釣り リール", "投げリール", "投げ釣りリール"] },
+    { "en": "surf fishing rod", "accept": ["投げ竿", "サーフロッド", "投竿"] },
+    { "en": "cassette player", "accept": ["カセットプレーヤー", "カセットプレイヤー"] },
+    { "en": "portable CD player", "accept": ["ポータブルCDプレーヤー", "ポータブルCDプレイヤー"] },
+    { "en": "digital camera", "accept": ["デジカメ"] },
+    { "en": "Game Boy Advance SP", "accept": ["ゲームボーイアドバンスSP"] },
+    { "en": "Nintendo 3DS LL", "accept": ["ニンテンドー3DS LL", "3DS LL"] },
+    { "en": "shimano ocea conquest", "accept": ["シマノ オシアコンクエスト", "シマノ オシア コンクエスト"] },
+    { "en": "seiko automatic watch junk", "accept": ["セイコー 自動巻き 腕時計 ジャンク", "セイコー 自動巻 腕時計 ジャンク", "セイコー 自動巻き腕時計 ジャンク", "セイコー 自動巻き腕時計 ジャンク品"] },
+    { "en": "bait reel", "accept": ["ベイトリール"] }
+  ]
+}

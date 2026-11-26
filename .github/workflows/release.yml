@@ -52,8 +52,23 @@ jobs:
             echo "Version $VERSION already released (or not on main): tests only."
           fi
 
-  release:
+  translation:
+    # Runs your translation test list through DeepL and shows the score on the run's Summary page.
     needs: test
+    if: github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Translation check
+        env:
+          DEEPL_API_KEY: ${{ secrets.DEEPL_API_KEY }}
+        run: node scripts/translation-check.mjs
+
+  release:
+    needs: [test, translation]
     if: needs.test.outputs.release == 'true'
     runs-on: ubuntu-latest
     environment:

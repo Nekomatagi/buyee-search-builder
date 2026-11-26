@@ -1,5 +1,15 @@
 # Changelog
 
+## 0.2.0 — 2026-11-26
+
+Better translations for sourcing.
+
+- DeepL now gets instructions, the way you'd brief a person: "I'm sourcing second-hand goods; give the keywords sellers use in listing titles" (short forms like デジカメ, brand names in katakana, no sentences).
+- Translations are cleaned into search words: 用, の, brackets and punctuation are removed.
+- If DeepL leaves a word in English (e.g. an unknown brand), the app says so and doesn't save it. Bad entries saved by 0.1.0 are removed on first start.
+- If DeepL refuses the instructions (plan limits), the app falls back to plain translation automatically.
+- Every build now runs a translation test list (test/translation-criteria.json) through DeepL and shows the score on the GitHub run's Summary page.
+
 ## 0.1.0 — 2026-11-26
 
 First version.

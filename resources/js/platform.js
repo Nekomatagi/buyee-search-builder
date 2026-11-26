@@ -2,7 +2,7 @@
 // runs in a plain browser for development (storage falls back to localStorage,
 // translation reports that it needs the desktop app).
 
-import { curlCommand, deeplBody, parseCurlOutput, cleanTranslation, isNewer } from "./core.js";
+import { curlCommand, deeplBody, parseCurlOutput, cleanTranslation, searchClean, isNewer } from "./core.js";
 
 export const isDesktop = typeof window.Neutralino !== "undefined" && typeof window.NL_PORT !== "undefined";
 
@@ -40,22 +40,37 @@ export function hasDeepLKey() {
   return Boolean(globalVar("DEEPL_KEY"));
 }
 
-export async function translateWithDeepL(text) {
-  if (!isDesktop) throw new Error("Translation works in the desktop app.");
+// Instructions are used unless DeepL refuses them (e.g. not on this plan);
+// after one refusal the app stops sending them for the rest of the session.
+let useInstructions = true;
+
+async function callDeepL(text, instructions) {
   const key = globalVar("DEEPL_KEY");
-  if (!key) throw new Error("This build has no DeepL key.");
   const tmp = await Neutralino.os.getPath("temp");
   const windows = window.NL_OS === "Windows";
   const bodyFile = `${tmp}${windows ? "\\" : "/"}buyee-deepl-${Date.now()}.json`;
-  await Neutralino.filesystem.writeFile(bodyFile, deeplBody(text));
+  await Neutralino.filesystem.writeFile(bodyFile, deeplBody(text, { instructions }));
   try {
     const r = await Neutralino.os.execCommand(curlCommand({ key, bodyFile, windows }));
     if (r.exitCode !== 0 && !r.stdOut) throw new Error(r.stdErr.trim() || "Could not reach DeepL.");
-    const { text: ja } = parseCurlOutput(r.stdOut);
-    return cleanTranslation(ja);
+    return parseCurlOutput(r.stdOut).text;
   } finally {
     Neutralino.filesystem.remove(bodyFile).catch(() => {});
   }
+}
+
+export async function translateWithDeepL(text) {
+  if (!isDesktop) throw new Error("Translation works in the desktop app.");
+  if (!globalVar("DEEPL_KEY")) throw new Error("This build has no DeepL key.");
+  let ja;
+  try {
+    ja = await callDeepL(text, useInstructions);
+  } catch (e) {
+    if (!useInstructions || ![400, 403].includes(e.status)) throw e;
+    useInstructions = false;
+    ja = await callDeepL(text, false);
+  }
+  return searchClean(cleanTranslation(ja));
 }
 
 // ---- clipboard and links
