@@ -80,7 +80,7 @@ Presets, custom filters, saved words, Buyee filters and theme are stored in the 
 ## Updates
 
 - The app checks for a new version when it starts and every 30 minutes.
-- When one is ready, the globe turns into a **green up-arrow**. Click it, choose **Restart and update**, and the app restarts on the new version.
+- When one is ready, the app asks right away: **Restart and update** or **Later**. After *Later*, the globe shows a **green up-arrow**; click it when you're ready.
 - Your presets, filters, saved words and **your last search** are kept.
 
 ## Your last search

@@ -8,7 +8,7 @@ Type **"surf fishing reel"**, get **投げ釣り リール** (*nagezuri rīru*),
 - **Romaji under every Japanese line**, generated offline.
 - **Your own presets and filters**, saved next to the app.
 - **Buyee's own filters**: item condition, options, and price range in ¥ or ฿.
-- **Portable and self-updating**: no install, and an *Update now* banner appears when a new version is released.
+- **Portable and self-updating**: no install, and it offers each new version when you open it.
 
 ## Download
 

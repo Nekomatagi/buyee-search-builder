@@ -292,6 +292,39 @@ export function isNewer(remote, local) {
   return false;
 }
 
+// ---- updates from two places, so one failing never strands the app:
+//   1. GitHub Pages update.json (Neutralino's own updater)
+//   2. the latest GitHub Release, which carries resources.neu as a file
+// GitHub's API answer -> { version, resourcesURL, source: "release" } or null.
+export function releaseUpdate(release) {
+  if (!release || release.draft || release.prerelease) return null;
+  const version = String(release.tag_name || "").replace(/^v/, "");
+  const asset = (release.assets || []).find((a) => a.name === "resources.neu");
+  if (!/^\d+\.\d+\.\d+$/.test(version) || !asset) return null;
+  return { version, resourcesURL: asset.browser_download_url, source: "release" };
+}
+
+// The newest candidate that is newer than what's running, or null.
+export function pickUpdate(local, candidates) {
+  let best = null;
+  for (const c of candidates) {
+    if (!c || !isNewer(c.version, local)) continue;
+    if (!best || isNewer(c.version, best.version)) best = c;
+  }
+  return best;
+}
+
+// Windows commands that download the new resources.neu next to the old one,
+// then swap it in only if the download finished.
+export function resourceSwapCommands({ url, appDir }) {
+  const dir = String(appDir || "").replace(/\//g, "\\").replace(/\\+$/, "");
+  const target = `${dir}\\resources.neu`, part = `${target}.download`;
+  return [
+    `curl.exe -sSL --fail --max-time 180 -o "${part}" "${url}"`,
+    `cmd /c move /Y "${part}" "${target}"`
+  ];
+}
+
 // Word cache: { [normalizedEnglish]: japanese }
 export function lookupWord(words, english) {
   const k = normalizeKey(english);

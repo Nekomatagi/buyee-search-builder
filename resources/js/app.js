@@ -528,15 +528,8 @@ async function main() {
   });
 
   // ---- updates: the globe turns into an up-arrow (checked in the background)
-  async function checkUpdates({ manual = false } = {}) {
-    const m = await checkForUpdate();
-    net.update = m;
-    renderNet();
-    if (!m && manual) flash("You're on the latest version.");
-  }
-
-  $("net").addEventListener("click", async () => {
-    if (!net.update) { await checkNet(); return checkUpdates({ manual: true }); }
+  let offered = null; // version already offered this run, so "Later" isn't nagged
+  async function offerUpdate() {
     const ok = await ask({
       title: `Update to version ${net.update.version}?`,
       text: "The app will restart. Your current search, presets and filters are kept.",
@@ -550,7 +543,21 @@ async function main() {
       src: $("src").textContent, cond: $("cond").value, fmt: $("fmt").value, ext: $("ext").value
     });
     flash("Updating…");
-    try { await installUpdate(); } catch { flash("Update failed. Try again later."); }
+    try { await installUpdate(net.update); } catch { flash("Update failed. Try again later."); }
+  }
+  async function checkUpdates({ manual = false } = {}) {
+    if (manual) flash("Checking for updates…");
+    const m = await checkForUpdate();
+    net.update = m;
+    renderNet();
+    if (!m) { if (manual) flash(`You're on the latest version (${appVersion()}).`); return; }
+    // Found a new version: ask right away the first time, then the arrow waits.
+    if (manual || offered !== m.version) { offered = m.version; offerUpdate(); }
+  }
+
+  $("net").addEventListener("click", async () => {
+    if (!net.update) { await checkNet(); return checkUpdates({ manual: true }); }
+    offerUpdate();
   });
 
   checkUpdates();

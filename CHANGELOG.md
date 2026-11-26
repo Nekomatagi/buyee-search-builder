@@ -1,5 +1,14 @@
 # Changelog
 
+## 0.4.4 — 2026-11-26
+
+Updates that always arrive.
+
+- When you open the app and a new version exists, it asks right away (Restart and update / Later). After *Later*, the globe's green arrow waits for you.
+- A second update source: besides the GitHub Pages feed, the app checks the latest GitHub Release and downloads its `resources.neu` directly. If one source fails (as Pages did for 0.4.3), the other still delivers.
+- Clicking the globe shows "Checking for updates…" and then your version number when you're up to date.
+- Releases now attach `resources.neu` next to the zip, and two releases can't deploy Pages at the same time.
+
 ## 0.4.3 — 2026-11-26
 
 More results: brands in English, "Used" as a filter.
