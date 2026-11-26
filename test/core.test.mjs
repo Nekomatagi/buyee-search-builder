@@ -195,3 +195,31 @@ test("start-with-Windows registry commands", () => {
   assert.equal(c.parseRegQuery(out), exe);
   assert.equal(c.parseRegQuery("ERROR: The system was unable to find the specified registry key or value."), null);
 });
+
+test("Used is a Buyee filter, not a search word", () => {
+  assert.equal(c.buildQuery(["bass pro shops キャップ", c.USED, ""]), "bass pro shops キャップ");
+  assert.deepEqual(c.conditionsFor(c.USED), ["3", "4", "5", "6", "7"]);
+  assert.deepEqual(c.conditionsFor(c.USED, ["1"]), ["1"]);
+  assert.deepEqual(c.conditionsFor("ジャンク"), []);
+  assert.deepEqual(c.conditionsFor(""), []);
+  const url = c.buyeeUrl("bass pro shops cap", { conditions: c.conditionsFor(c.USED) });
+  assert.match(url, /item_status=3%2C4%2C5%2C6%2C7/);
+  assert.doesNotMatch(url, /%E4%B8%AD%E5%8F%A4/); // no 中古 in the query
+});
+
+test("defaults: Used maps to the Buyee filter", async () => {
+  const { readFile } = await import("node:fs/promises");
+  const d = JSON.parse(await readFile(new URL("../resources/data/defaults.json", import.meta.url), "utf8"));
+  assert.equal(d.conditions.find((x) => x.en.startsWith("Used")).ja, c.USED);
+});
+
+test("migrateWords resets old DeepL answers once, keeps brand edits", () => {
+  const saved = { "bass pro shops cap": "バスプロショップス キャップ", "zippo lighter": "Zippo ライター", "x": "x" };
+  assert.deepEqual(c.migrateWords(saved, 1), { "zippo lighter": "Zippo ライター" });
+  assert.deepEqual(c.migrateWords(saved, c.WORDS_REV), { "bass pro shops cap": "バスプロショップス キャップ", "zippo lighter": "Zippo ライター" });
+});
+
+test("DeepL instructions stay within DeepL's limits", () => {
+  assert.ok(c.DEEPL_INSTRUCTIONS.length <= c.MAX_INSTRUCTIONS);
+  for (const i of c.DEEPL_INSTRUCTIONS) assert.ok(i.length <= c.MAX_INSTRUCTION_LENGTH, i);
+});

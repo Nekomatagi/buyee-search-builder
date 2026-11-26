@@ -9,7 +9,7 @@ const key = (process.env.DEEPL_API_KEY || "").trim();
 if (!key) { console.error("DEEPL_API_KEY is not set."); process.exit(1); }
 
 const { cases } = JSON.parse(fs.readFileSync(new URL("../test/translation-criteria.json", import.meta.url), "utf8"));
-const squash = (s) => s.replace(/\s+/g, "");
+const squash = (s) => s.replace(/\s+/g, "").toLowerCase();
 
 async function translate(text, instructions) {
   const r = await fetch(deeplEndpoint(key), {

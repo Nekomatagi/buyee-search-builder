@@ -1,5 +1,5 @@
 import {
-  hasJapanese, isUntranslated, buildQuery, buyeeUrl, lookupWord, rememberWord,
+  hasJapanese, isUntranslated, buildQuery, buyeeUrl, isFilterToken, conditionsFor, migrateWords, WORDS_REV, lookupWord, rememberWord,
   addItem, removeItem, seedWords, BUYEE_CONDITIONS, BUYEE_OPTIONS, BUYEE_SORTS, DEFAULT_SORT,
   CURRENCIES, DEFAULT_CURRENCY, toJpy, nextTheme, THEMES
 } from "./core.js";
@@ -33,7 +33,7 @@ async function toJapanese(text) {
   const ja = await translateWithDeepL(t);
   if (isUntranslated(t, ja)) {
     // Not saved: next time DeepL gets another chance, or you type the Japanese.
-    return { ja, source: "DeepL kept it in English. Type the Japanese if you know it.", warn: true };
+    return { ja, source: "Kept in English. Fine for foreign brands; type the Japanese if you know it." };
   }
   state.words = rememberWord(state.words, t, ja);
   save("words", state.words);
@@ -88,7 +88,9 @@ function fillSelect(el, items, keep) {
   el.replaceChildren(...items.map((it) => {
     const o = document.createElement("option");
     o.value = it.ja;
-    o.textContent = !it.ja ? it.en : it.en === it.ja ? it.ja : `${it.en} (${it.ja})`;
+    o.textContent = !it.ja ? it.en
+      : isFilterToken(it.ja) ? `${it.en} (Buyee filter)`
+      : it.en === it.ja ? it.ja : `${it.en} (${it.ja})`;
     return o;
   }));
   if (keep !== undefined && items.some((i) => i.ja === keep)) el.value = keep;
@@ -267,10 +269,12 @@ function flash(text) {
 async function main() {
   await initPlatform();
   state.defaults = await (await fetch("data/defaults.json")).json();
-  // Drop saved "translations" that are still English (saved by v0.1.0).
-  const saved = Object.fromEntries(Object.entries(await load("words", {})).filter(([, ja]) => hasJapanese(ja)));
+  // Drop saved "translations" that are still English, and reset old DeepL
+  // answers once when the translation rules change (see migrateWords).
+  const saved = migrateWords(await load("words", {}), await load("wordsRev", 1));
   state.words = { ...seedWords(state.defaults), ...saved };
   save("words", saved);
+  save("wordsRev", WORDS_REV);
   state.presets = await load("presets", state.defaults.presets);
   state.filters = await load("filters", []);
 
@@ -375,7 +379,8 @@ async function main() {
     updateCount();
   }
   function updateCount() {
-    const n = buyee.conditions.length + buyee.options.length + Object.values(buyee.prices).filter((v) => Number(v) > 0).length;
+    const used = !buyee.conditions.length && conditionsFor($("cond").value).length ? 1 : 0;
+    const n = buyee.conditions.length + used + buyee.options.length + Object.values(buyee.prices).filter((v) => Number(v) > 0).length;
     $("filterCount").textContent = n ? `· ${n} filter${n > 1 ? "s" : ""}` : "";
   }
   async function updateRate() {
@@ -388,6 +393,7 @@ async function main() {
       : "No exchange rate yet (offline). Switch to ¥ JPY or connect to the internet.";
   }
   const persist = () => { save("buyeeFilters", buyee); updateCount(); markBuyee(); };
+  $("cond").addEventListener("change", updateCount);
 
   for (const box of ["bConditions", "bOptions"]) {
     $(box).addEventListener("click", (e) => {
@@ -423,7 +429,8 @@ async function main() {
     if (buyee.currency !== "JPY" && !rate && Object.keys(buyee.prices).some((k) => Number(buyee.prices[k]) > 0)) {
       flash("Prices skipped: no exchange rate. Use ¥ JPY.");
     }
-    openUrl(buyeeUrl(q, { conditions: buyee.conditions, options: buyee.options, prices, sort: buyee.sort }));
+    const conditions = conditionsFor($("cond").value, buyee.conditions);
+    openUrl(buyeeUrl(q, { conditions, options: buyee.options, prices, sort: buyee.sort }));
   });
 
   // theme and internet indicator
@@ -511,7 +518,7 @@ async function main() {
   $("reset").addEventListener("click", () => {
     $("en").value = ""; $("ja").value = ""; $("ja").classList.remove("edited"); $("src").textContent = ""; $("jaRomaji").textContent = "";
     $("cond").value = ""; $("fmt").value = ""; $("ext").value = "";
-    renderQuery(); $("en").focus();
+    $("cond").dispatchEvent(new Event("change")); $("en").focus();
   });
 
   renderPresets();

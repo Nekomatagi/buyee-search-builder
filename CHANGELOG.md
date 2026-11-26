@@ -1,5 +1,15 @@
 # Changelog
 
+## 0.4.3 — 2026-11-26
+
+More results: brands in English, "Used" as a filter.
+
+- Foreign brand names stay in English (*bass pro shops cap* → *Bass Pro Shops キャップ*). Sellers list them that way; the katakana version found less than half as many items. Japanese brands still go into katakana.
+- **Used / second-hand** now uses Buyee's used-condition filter instead of adding 中古 to the search. In a test, 中古 cut 230 hits to 22.
+- Saved DeepL translations are refreshed once so old katakana brand names don't stick; hand edits that keep English brand names are kept.
+- When DeepL keeps a word in English, the note is no longer shown as an error.
+- Translation test: two brand cases added; matching ignores letter case.
+
 ## 0.4.2 — 2026-11-26
 
 Broad first, and see what you changed.
