@@ -10,7 +10,7 @@ The screen runs top to bottom in the order you build a search: product, then con
 | Globe | **Green dot:** online. **Red dot:** offline, so translation, the exchange rate and Buyee won't work. Checked every 30 seconds. |
 | Pin | **Keep on top:** the window stays above other windows (handy next to your browser). Click again to turn off. Remembered. |
 
-The flags top-right (🇹🇭 → 🇯🇵) are decoration.
+The flags top-right show your home country and Japan. Click the home flag to choose any ASEAN member country; for now this only changes the flag.
 
 **Tip:** to start the app from the taskbar, run it once, right-click its taskbar icon and choose **Pin to taskbar**.
 
