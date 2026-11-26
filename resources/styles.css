@@ -19,7 +19,11 @@
 body { margin: 0; background: var(--bg); color: var(--ink); transition: background .2s, color .2s;
   font: 15px/1.5 "Yu Gothic UI", "Meiryo UI", "Segoe UI", system-ui, sans-serif; }
 .wrap { max-width: 640px; margin: 0 auto; padding: 12px 20px 28px; }
-.topbar { display: flex; gap: 6px; margin-bottom: 8px; }
+.topbar { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; }
+.tools { display: flex; gap: 6px; }
+.flags { display: flex; gap: 6px; }
+.flag { width: 27px; height: 18px; border-radius: 3px; box-shadow: 0 0 0 1px rgba(0,0,0,.18); display: block; }
+#pinBtn.on { background: var(--ink); color: var(--bg); border-color: var(--ink); }
 .icon-btn { position: relative; width: 32px; height: 32px; display: inline-grid; place-items: center;
   border: 1px solid var(--line); border-radius: 999px; background: transparent; color: var(--ink); padding: 0; }
 button.icon-btn { cursor: pointer; }
@@ -43,6 +47,7 @@ input:focus, select:focus, button:focus-visible { outline: 2px solid var(--ok); 
 .ja-box { margin-top: 10px; }
 .ja-head { display: flex; justify-content: space-between; align-items: baseline; gap: 8px; margin-top: 8px; }
 #ja, #fJa { font-size: 17px; font-weight: 600; }
+#ja.edited, #fJa.edited { border: 2px solid var(--ink); padding: 8px 11px; }
 .romaji { margin: 4px 2px 0; font-size: 13px; color: var(--mute); font-style: italic; min-height: 1.5em; overflow-wrap: anywhere; }
 .src { font-size: 11px; color: var(--mute); text-align: right; }
 .src.err { color: var(--warn); }
@@ -83,6 +88,8 @@ button { font: inherit; cursor: pointer; }
   min-height: 46px; padding: 12px 16px; border: 0; border-radius: 999px; background: #f39200; color: #ffffff;
   font-weight: 700; font-size: 16px; }
 .buyee-btn:hover { background: #ff9f0f; }
+/* Always visible: sticks to the bottom of the window while scrolling. */
+.buyee-btn { position: sticky; bottom: 12px; z-index: 5; box-shadow: 0 6px 18px rgba(0,0,0,.28); }
 .buyee-btn svg { flex: none; display: block; align-self: center; }
 .buyee-btn small { font-size: 14px; font-weight: 400; color: #ffffff; opacity: .9; }
 .ver { font-size: 11px; color: var(--mute); text-align: center; margin: 18px 0 0; }

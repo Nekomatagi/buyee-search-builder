@@ -24,7 +24,9 @@
     "storage.getData",
     "storage.setData",
     "clipboard.writeText",
-    "filesystem.writeBinaryFile"
+    "filesystem.writeBinaryFile",
+    "window.setAlwaysOnTop",
+    "window.setTitle"
   ],
   "globalVariables": {
     "DEEPL_KEY": "",
@@ -32,7 +34,7 @@
   },
   "modes": {
     "window": {
-      "title": "Buyee Search Builder",
+      "title": "Buyee Search Builder - 🏠TH-JP✈️",
       "width": 560,
       "height": 900,
       "minWidth": 380,

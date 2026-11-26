@@ -5,7 +5,7 @@ import {
 import { romaji, initRomaji } from "./romaji.js";
 import {
   isDesktop, initPlatform, appVersion, load, save, translateWithDeepL,
-  hasDeepLKey, copyText, openUrl, checkForUpdate, installUpdate
+  hasDeepLKey, copyText, openUrl, checkForUpdate, installUpdate, setAlwaysOnTop
 } from "./platform.js";
 
 const $ = (id) => document.getElementById(id);
@@ -43,17 +43,19 @@ function liveTranslator({ input, output, srcEl, romajiEl, onChange }) {
   async function run() {
     const mine = ++seq;
     const text = input.value;
-    if (!text.trim()) { output.value = ""; srcEl.textContent = ""; await showRomaji(); return onChange(); }
+    if (!text.trim()) { output.value = ""; output.classList.remove("edited"); srcEl.textContent = ""; await showRomaji(); return onChange(); }
     srcEl.className = "src"; srcEl.textContent = "Translating…";
     try {
       const { ja, source, warn } = await toJapanese(text);
       if (mine !== seq) return;
       output.value = ja;
+      output.classList.remove("edited");
       srcEl.className = warn ? "src err" : "src";
       srcEl.textContent = source;
     } catch (e) {
       if (mine !== seq) return;
       output.value = "";
+      output.classList.remove("edited");
       srcEl.className = "src err";
       srcEl.textContent = e.message;
     }
@@ -67,7 +69,7 @@ function liveTranslator({ input, output, srcEl, romajiEl, onChange }) {
   input.addEventListener("input", () => { clearTimeout(timer); timer = setTimeout(run, DEBOUNCE_MS); });
   input.addEventListener("keydown", (e) => { if (e.key === "Enter") { clearTimeout(timer); run(); } });
   // Editing the Japanese by hand teaches the cache for next time.
-  output.addEventListener("input", () => { srcEl.className = "src"; srcEl.textContent = "Edited"; onChange(); showRomaji(); });
+  output.addEventListener("input", () => { output.classList.add("edited"); srcEl.className = "src"; srcEl.textContent = "Edited"; onChange(); showRomaji(); });
   output.addEventListener("change", () => {
     const en = input.value.trim();
     if (en && !hasJapanese(en) && output.value.trim()) {
@@ -226,6 +228,7 @@ async function main() {
     }
     $("en").value = chip.dataset.en;
     $("ja").value = chip.dataset.ja;
+    $("ja").classList.remove("edited");
     $("src").className = "src";
     $("src").textContent = "Preset";
     await product.showRomaji();
@@ -245,7 +248,7 @@ async function main() {
   const panel = $("filterPanel");
   $("toggleFilter").addEventListener("click", () => {
     panel.hidden = !panel.hidden;
-    if (!panel.hidden) { $("fEn").value = ""; $("fJa").value = ""; $("fRomaji").textContent = ""; $("fSrc").textContent = ""; $("saveFilter").disabled = true; $("fEn").focus(); }
+    if (!panel.hidden) { $("fEn").value = ""; $("fJa").value = ""; $("fJa").classList.remove("edited"); $("fRomaji").textContent = ""; $("fSrc").textContent = ""; $("saveFilter").disabled = true; $("fEn").focus(); }
   });
   $("cancelFilter").addEventListener("click", () => (panel.hidden = true));
   $("saveFilter").addEventListener("click", async () => {
@@ -329,12 +332,27 @@ async function main() {
   // theme and internet indicator
   let theme = applyTheme(await load("theme", "dark"));
   $("themeBtn").addEventListener("click", () => { theme = applyTheme(nextTheme(theme)); save("theme", theme); });
+  let pinned = await load("pinned", false);
+  const showPin = () => {
+    $("pinBtn").classList.toggle("on", pinned);
+    $("pinBtn").setAttribute("aria-pressed", String(pinned));
+    $("pinBtn").title = `Keep window on top: ${pinned ? "on" : "off"}`;
+  };
+  showPin();
+  if (pinned) setAlwaysOnTop(true).catch(() => {});
+  $("pinBtn").addEventListener("click", async () => {
+    pinned = !pinned;
+    showPin();
+    save("pinned", pinned);
+    try { await setAlwaysOnTop(pinned); } catch { flash("Couldn't change keep-on-top."); }
+  });
+
   checkNet();
   setInterval(checkNet, 30000);
   window.addEventListener("online", checkNet);
   window.addEventListener("offline", checkNet);
   $("reset").addEventListener("click", () => {
-    $("en").value = ""; $("ja").value = ""; $("src").textContent = ""; $("jaRomaji").textContent = "";
+    $("en").value = ""; $("ja").value = ""; $("ja").classList.remove("edited"); $("src").textContent = ""; $("jaRomaji").textContent = "";
     $("cond").value = "中古"; $("fmt").value = ""; $("ext").value = "";
     renderQuery(); $("en").focus();
   });

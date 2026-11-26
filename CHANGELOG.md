@@ -1,5 +1,14 @@
 # Changelog
 
+## 0.3.1 — 2026-11-26
+
+Polish.
+
+- The Japanese box keeps a bold frame while it holds your own edit; it goes back to normal when filled automatically (translation, preset, reset).
+- Thai and Japanese flags top-right; window title "Buyee Search Builder - 🏠TH-JP✈️".
+- New pin button after the globe: keep the window on top of other windows (remembered).
+- "Open on Buyee" stays visible at the bottom of the window while scrolling.
+
 ## 0.3.0 — 2026-11-26
 
 Buyee's own filters, themes and an internet indicator.

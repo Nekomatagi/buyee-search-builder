@@ -6,9 +6,12 @@ import { curlCommand, deeplBody, parseCurlOutput, cleanTranslation, searchClean,
 
 export const isDesktop = typeof window.Neutralino !== "undefined" && typeof window.NL_PORT !== "undefined";
 
+export const APP_TITLE = "Buyee Search Builder - 🏠TH-JP✈️";
+
 export async function initPlatform() {
   if (!isDesktop) return;
   Neutralino.init();
+  Neutralino.window.setTitle(APP_TITLE).catch(() => {});
   Neutralino.events.on("windowClose", () => Neutralino.app.exit());
 }
 
@@ -71,6 +74,11 @@ export async function translateWithDeepL(text) {
     ja = await callDeepL(text, false);
   }
   return searchClean(cleanTranslation(ja));
+}
+
+// ---- window
+export async function setAlwaysOnTop(on) {
+  if (isDesktop) await Neutralino.window.setAlwaysOnTop(Boolean(on));
 }
 
 // ---- clipboard and links
