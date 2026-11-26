@@ -9,7 +9,7 @@
     { "en": "Game Boy Advance SP", "accept": ["ゲームボーイアドバンスSP"] },
     { "en": "Nintendo 3DS LL", "accept": ["ニンテンドー3DS LL", "3DS LL"] },
     { "en": "shimano ocea conquest", "accept": ["シマノ オシアコンクエスト", "シマノ オシア コンクエスト"] },
-    { "en": "seiko automatic watch junk", "accept": ["セイコー 自動巻き 腕時計 ジャンク", "セイコー 自動巻 腕時計 ジャンク", "セイコー 自動巻き腕時計 ジャンク", "セイコー 自動巻き腕時計 ジャンク品"] },
+    { "en": "seiko automatic watch junk", "accept": ["セイコー 自動巻き 腕時計 ジャンク", "セイコー 自動巻 腕時計 ジャンク", "セイコー 自動巻き腕時計 ジャンク", "セイコー 自動巻き腕時計 ジャンク品", "セイコー 自動巻き ジャンク"] },
     { "en": "bait reel", "accept": ["ベイトリール"] }
   ]
 }

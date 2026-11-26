@@ -1,6 +1,6 @@
 import {
   hasJapanese, isUntranslated, buildQuery, buyeeUrl, lookupWord, rememberWord,
-  addItem, removeItem, seedWords
+  addItem, removeItem, seedWords, BUYEE_CONDITIONS, BUYEE_OPTIONS, thbToJpy, nextTheme, THEMES
 } from "./core.js";
 import { romaji, initRomaji } from "./romaji.js";
 import {
@@ -122,6 +122,66 @@ async function renderQuery() {
   return q;
 }
 
+// ---------- theme (dark / paper white / red)
+const THEME_NAMES = { dark: "Dark", paper: "Paper white", red: "Red" };
+function applyTheme(t) {
+  const theme = THEMES.includes(t) ? t : "dark";
+  document.documentElement.dataset.theme = theme;
+  const next = nextTheme(theme);
+  $("themeBtn").title = `Theme: ${THEME_NAMES[theme]}. Click for ${THEME_NAMES[next]}.`;
+  return theme;
+}
+
+// ---------- internet indicator
+async function checkNet() {
+  const el = $("net");
+  let on = navigator.onLine;
+  if (on) {
+    const ctrl = new AbortController();
+    const t = setTimeout(() => ctrl.abort(), 5000);
+    try { await fetch("https://buyee.jp/favicon.ico?" + Date.now(), { mode: "no-cors", cache: "no-store", signal: ctrl.signal }); }
+    catch { on = false; }
+    clearTimeout(t);
+  }
+  el.classList.toggle("on", on);
+  el.classList.toggle("off", !on);
+  el.title = on ? "Online" : "Offline: translation and Buyee won't work";
+  el.setAttribute("aria-label", el.title);
+  return on;
+}
+
+// ---------- Buyee filters (sent in the Buyee address, not the copied text)
+const RATE_MAX_AGE = 12 * 60 * 60 * 1000;
+async function getThbRate() {
+  const cached = await load("thbRate", null);
+  if (cached && Date.now() - cached.at < RATE_MAX_AGE) return cached;
+  try {
+    const r = await fetch("https://open.er-api.com/v6/latest/JPY", { cache: "no-store" });
+    const j = await r.json();
+    const fresh = { rate: j.rates.THB, at: Date.now(), date: j.time_last_update_utc };
+    if (!(fresh.rate > 0)) throw new Error("no rate");
+    await save("thbRate", fresh);
+    return fresh;
+  } catch {
+    return cached; // may be old or null
+  }
+}
+
+function renderBuyeeChips(b) {
+  const chip = (group, value, label, on) => {
+    const el = document.createElement("button");
+    el.type = "button";
+    el.className = "chip" + (on ? " on" : "");
+    el.dataset.group = group;
+    el.dataset.value = value;
+    el.setAttribute("aria-pressed", String(on));
+    el.textContent = label;
+    return el;
+  };
+  $("bConditions").replaceChildren(...BUYEE_CONDITIONS.map((c) => chip("conditions", c.id, c.en, b.conditions.includes(c.id))));
+  $("bOptions").replaceChildren(...BUYEE_OPTIONS.map((o) => chip("options", o.param, o.en, b.options.includes(o.param))));
+}
+
 function flash(text) {
   $("msg").textContent = text;
   clearTimeout(flash.t);
@@ -206,10 +266,73 @@ async function main() {
     try { await copyText(q); flash("Copied. Paste it into Buyee."); }
     catch { flash("Copy failed. Select the query and press Ctrl+C."); }
   });
+  // Buyee filters
+  const PRICE_IDS = { currentMin: "curMin", currentMax: "curMax", buyoutMin: "buyMin", buyoutMax: "buyMax" };
+  const emptyBuyee = () => ({ conditions: [], options: [], currency: "JPY", prices: {} });
+  let buyee = { ...emptyBuyee(), ...(await load("buyeeFilters", {})) };
+  let rate = null;
+
+  function showBuyee() {
+    renderBuyeeChips(buyee);
+    $("currency").value = buyee.currency;
+    for (const [k, id] of Object.entries(PRICE_IDS)) $(id).value = buyee.prices[k] ?? "";
+    updateCount();
+  }
+  function updateCount() {
+    const n = buyee.conditions.length + buyee.options.length + Object.values(buyee.prices).filter((v) => Number(v) > 0).length;
+    $("filterCount").textContent = n ? `· ${n} filter${n > 1 ? "s" : ""}` : "";
+  }
+  async function updateRate() {
+    if (buyee.currency !== "THB") { $("rateNote").textContent = ""; return; }
+    rate = await getThbRate();
+    $("rateNote").textContent = rate
+      ? `฿1 ≈ ¥${(1 / rate.rate).toFixed(2)} (rate from ${new Date(rate.at).toLocaleDateString()}). Buyee gets the prices in yen.`
+      : "No exchange rate yet (offline). Switch to ¥ JPY or connect to the internet.";
+  }
+  const persist = () => { save("buyeeFilters", buyee); updateCount(); };
+
+  for (const box of ["bConditions", "bOptions"]) {
+    $(box).addEventListener("click", (e) => {
+      const c = e.target.closest(".chip");
+      if (!c) return;
+      const list = buyee[c.dataset.group];
+      const v = c.dataset.value;
+      buyee[c.dataset.group] = list.includes(v) ? list.filter((x) => x !== v) : [...list, v];
+      c.classList.toggle("on");
+      c.setAttribute("aria-pressed", String(c.classList.contains("on")));
+      persist();
+    });
+  }
+  for (const [k, id] of Object.entries(PRICE_IDS)) {
+    $(id).addEventListener("input", () => { buyee.prices[k] = $(id).value; persist(); });
+  }
+  $("currency").addEventListener("change", () => { buyee.currency = $("currency").value; persist(); updateRate(); });
+  $("clearBuyee").addEventListener("click", () => { buyee = emptyBuyee(); persist(); showBuyee(); updateRate(); });
+  showBuyee();
+  updateRate();
+
   $("open").addEventListener("click", async () => {
     const q = await renderQuery();
-    if (q) openUrl(buyeeUrl(q));
+    if (!q) return flash("Type a product first.");
+    const prices = {};
+    for (const [k, v] of Object.entries(buyee.prices)) {
+      if (!(Number(v) > 0)) continue;
+      if (buyee.currency === "JPY") prices[k] = Number(v);
+      else if (rate) prices[k] = thbToJpy(v, rate.rate);
+    }
+    if (buyee.currency === "THB" && !rate && Object.keys(buyee.prices).some((k) => Number(buyee.prices[k]) > 0)) {
+      flash("Prices skipped: no exchange rate. Use ¥ JPY.");
+    }
+    openUrl(buyeeUrl(q, { conditions: buyee.conditions, options: buyee.options, prices }));
   });
+
+  // theme and internet indicator
+  let theme = applyTheme(await load("theme", "dark"));
+  $("themeBtn").addEventListener("click", () => { theme = applyTheme(nextTheme(theme)); save("theme", theme); });
+  checkNet();
+  setInterval(checkNet, 30000);
+  window.addEventListener("online", checkNet);
+  window.addEventListener("offline", checkNet);
   $("reset").addEventListener("click", () => {
     $("en").value = ""; $("ja").value = ""; $("src").textContent = ""; $("jaRomaji").textContent = "";
     $("cond").value = "中古"; $("fmt").value = ""; $("ext").value = "";
